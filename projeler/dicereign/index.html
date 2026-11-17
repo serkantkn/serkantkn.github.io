@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="dicereign">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dice Reign — Serkan Tiken</title>
+<meta name="description" content="Dice Reign: zar at, toprak kazan, krallığı kur. Sıra tabanlı zarlı strateji oyunu; seferler, günlük meydan okuma ve çevrimiçi maçlar. Android, iOS ve Mac için yakında.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="Dice Reign — Zar at, krallığını kur">
+<meta property="og:image" content="../../assets/img/dicereign.jpg">
+<link rel="icon" href="../../assets/icons/dicereign.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=4">
+<style>
+  body { --c: var(--dice); --c2: var(--dice-2); }
+  .phero { background: radial-gradient(90% 70% at 70% 40%, #2f6fc4 0%, #173c74 45%, var(--bg) 100%); }
+  .waves { position: absolute; inset: 0; z-index: 0; opacity: .25;
+    background: repeating-radial-gradient(circle at 72% 46%, transparent 0 34px, rgba(255,255,255,.35) 35px 37px, transparent 38px 70px);
+    animation: ripple 8s linear infinite; mask-image: radial-gradient(circle at 72% 46%, #000 0, transparent 60%); -webkit-mask-image: radial-gradient(circle at 72% 46%, #000 0, transparent 60%); }
+  @keyframes ripple { to { background-position: 0 0; transform: scale(1.12); opacity: .1; } }
+  .title-dr { font-family: "Cinzel", serif; font-weight: 900; letter-spacing: .02em; color: #ffd76a; text-shadow: 0 4px 0 #a86b12, 0 14px 40px rgba(0,0,0,.45); }
+  .crown { font-size: 46px; display: inline-block; animation: bob 3s ease-in-out infinite; }
+
+  /* 3D dice */
+  .dice-stage { position: relative; height: 520px; perspective: 1100px; }
+  .shots { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; }
+  .shots img { position: absolute; width: 230px; border-radius: 26px; border: 1px solid var(--line-2); box-shadow: 0 30px 70px -20px rgba(0,0,0,.7); transition: transform .8s var(--spring); }
+  .shots img:nth-child(1) { transform: translateX(-150px) rotate(-10deg) scale(.88); }
+  .shots img:nth-child(2) { transform: translateY(-10px); z-index: 2; }
+  .shots img:nth-child(3) { transform: translateX(150px) rotate(10deg) scale(.88); }
+  .dice-stage:hover .shots img:nth-child(1) { transform: translateX(-200px) rotate(-14deg) scale(.9); }
+  .dice-stage:hover .shots img:nth-child(3) { transform: translateX(200px) rotate(14deg) scale(.9); }
+  .die { --s: 84px; position: absolute; width: var(--s); height: var(--s); transform-style: preserve-3d; z-index: 3; }
+  .die .f { position: absolute; inset: 0; border-radius: 18%; background: linear-gradient(145deg, #ffffff, #e9e4da); box-shadow: inset 0 0 0 2px rgba(0,0,0,.06), inset 0 -6px 12px rgba(0,0,0,.08);
+    display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; backface-visibility: hidden; }
+  .die .f i { width: 72%; height: 72%; margin: auto; border-radius: 50%; background: #1d1f2b; box-shadow: inset 0 2px 3px rgba(0,0,0,.6); }
+  .die .f1 { transform: translateZ(calc(var(--s) / 2)); }
+  .die .f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+  .die .f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+  .die .f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+  .die .f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+  .die .f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+  .die.idle { animation: tumble 9s linear infinite; }
+  .die.idle.b { animation-duration: 12s; animation-direction: reverse; }
+  @keyframes tumble { from { transform: rotateX(0) rotateY(0) rotateZ(0); } to { transform: rotateX(360deg) rotateY(720deg) rotateZ(360deg); } }
+  .die-wrap { position: absolute; z-index: 3; animation: float 6s ease-in-out infinite; }
+
+  /* roll demo */
+  .roll { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: clamp(28px, 5vw, 56px); border-radius: 32px; border: 1px solid var(--line-2);
+    background: radial-gradient(100% 120% at 0% 0%, rgba(255,207,74,.16), transparent 60%), #10121a; }
+  .tray { position: relative; height: 240px; border-radius: 24px; perspective: 900px; display: flex; align-items: center; justify-content: center; gap: 40px;
+    background: radial-gradient(circle at 50% 40%, #2a6a3a, #173f22); box-shadow: inset 0 0 0 8px #6a4320, inset 0 0 40px rgba(0,0,0,.5); }
+  .tray .die { position: relative; --s: 78px; transition: transform 1.1s cubic-bezier(.2,.9,.25,1.08); }
+  .result { font: 800 clamp(40px, 6vw, 72px)/1 var(--display); color: var(--c); letter-spacing: -.04em; }
+  .result small { display: block; font: 500 15px/1.5 var(--sans); color: var(--ink-2); letter-spacing: 0; margin-top: 8px; }
+  .tiles { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--ink-2); font-size: 15px; }
+  .tiles input { accent-color: var(--c); width: 160px; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: st; }
+  .step { position: relative; padding: 30px; border-radius: 24px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; }
+  .step::before { counter-increment: st; content: counter(st); position: absolute; right: -6px; top: -30px; font: 900 150px/1 "Cinzel", serif; color: rgba(255,207,74,.07); transition: transform .6s var(--spring), color .3s; }
+  .step:hover::before { transform: translateY(14px) rotate(-6deg); color: rgba(255,207,74,.16); }
+  .step h3 { font-size: 22px; margin: 14px 0 8px; position: relative; }
+  .step p { color: var(--ink-2); margin: 0; font-size: 15px; position: relative; }
+  .step .em { font-size: 34px; position: relative; }
+
+  /* seasons wheel */
+  .seasons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .season { padding: 26px; border-radius: 22px; border: 1px solid var(--line); background: var(--bg-2); transition: transform .4s var(--spring), background .4s, border-color .3s; }
+  .season .em { font-size: 40px; display: inline-block; }
+  .season h3 { font-size: 21px; margin: 12px 0 6px; }
+  .season p { margin: 0; color: var(--ink-2); font-size: 14px; }
+  .season.now { transform: translateY(-10px); border-color: var(--sc); background: color-mix(in srgb, var(--sc) 14%, var(--bg-2)); }
+  .season.now .em { animation: bob 1.6s ease-in-out infinite; }
+
+  .leaders { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .leader { padding: 26px; border-radius: 22px; background: linear-gradient(160deg, #f4e6c4, #e6cf9a); color: #3a2a12; border: 2px solid #c9a050; box-shadow: 0 20px 40px -24px rgba(0,0,0,.8);
+    transition: transform .5s var(--spring); transform: rotate(var(--r, 0deg)); }
+  .leader:hover { transform: rotate(0) translateY(-10px) scale(1.04); }
+  .leader .em { font-size: 34px; }
+  .leader h3 { font-family: "Cinzel", serif; font-weight: 700; font-size: 20px; letter-spacing: 0; margin: 10px 0 6px; }
+  .leader p { margin: 0; font-size: 14px; color: #5a4524; }
+
+  .market { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .price { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 22px; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--line); }
+  .price b { font-family: var(--display); font-size: 18px; }
+  .price span { color: var(--muted); font-size: 13px; display: block; }
+  .coin { white-space: nowrap; font: 800 18px/1 var(--display); color: var(--c); }
+  .coin::before { content: "🪙 "; }
+
+  @media (max-width: 1020px) { .roll { grid-template-columns: 1fr; } .seasons, .leaders { grid-template-columns: repeat(2, 1fr); } .market { grid-template-columns: 1fr; } .dice-stage { height: 440px; } .shots img { width: 190px; } }
+  @media (max-width: 640px) { .steps, .seasons, .leaders { grid-template-columns: 1fr; } .shots img { width: 150px; } .shots img:nth-child(1) { transform: translateX(-90px) rotate(-10deg) scale(.88); } .shots img:nth-child(3) { transform: translateX(90px) rotate(10deg) scale(.88); } .dice-stage { height: 360px; } }
+</style>
+</head>
+<body>
+
+<section class="phero">
+  <div class="waves" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true" style="--a1:#2f6fc4;--a2:var(--dice);--a3:#173c74;--a4:var(--dice-2)"><b></b><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <div class="phero-grid">
+      <div>
+        <div class="app-id reveal"><img src="../../assets/icons/dicereign.png" alt="">
+          <span class="chip hot pulse"><span lang="tr">Çok yakında</span><span lang="en">Coming soon</span> · Android · iOS · Mac</span></div>
+        <p class="reveal" style="margin:0"><span class="crown" aria-hidden="true">👑</span></p>
+        <h1 class="h-xl title-dr split">Dice Reign</h1>
+        <p class="lede reveal" style="--d:.4s;font-size:clamp(20px,2.4vw,28px);font-weight:600;color:var(--ink)"><span lang="tr">Zar at · Toprak kazan · Krallığı kur</span><span lang="en">Roll dice · Win land · Build a kingdom</span></p>
+        <p class="lede reveal" style="--d:.5s"><span lang="tr">Başkentini kur, zar atıp asker topla, komşu karelere saldır. Her karen altın getirir; pazardan asker, toprak, köy ve kule al. Mevsimler değişir, savaşın kuralları da. Reklam yok.</span><span lang="en">Found your capital, roll for soldiers and attack the tiles next door. Every tile earns gold; buy soldiers, land, villages and towers at the market. Seasons turn, and so do the rules of war. No ads.</span></p>
+        <div class="btns reveal" style="--d:.65s">
+          <a class="btn" href="#dene" data-magnet>🎲 <span lang="tr">Zar at, dene</span><span lang="en">Roll the dice</span></a>
+          <a class="btn ghost" href="#nasil" data-magnet><span lang="tr">Nasıl oynanır?</span><span lang="en">How to play</span></a>
+        </div>
+      </div>
+      <div class="dice-stage reveal zoom" style="--d:.3s">
+        <div class="shots">
+          <img lang="tr" src="img/tr/01_menu.jpg" alt="Ana menü"><img lang="tr" src="img/tr/03_attack.jpg" alt="Saldırı"><img lang="tr" src="img/tr/04_market.jpg" alt="Pazar">
+          <img lang="en" src="img/en/01_menu.jpg" alt="Main menu"><img lang="en" src="img/en/03_attack.jpg" alt="Attack"><img lang="en" src="img/en/04_market.jpg" alt="Market">
+        </div>
+        <div class="die-wrap" style="left:2%;top:8%"><div class="die idle" data-die></div></div>
+        <div class="die-wrap" style="right:0;bottom:6%;animation-delay:-3s"><div class="die idle b" data-die style="--s:64px"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true"></div>
+</section>
+
+<section class="section" id="nasil">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Nasıl oynanır</span><span lang="en">How to play</span></p>
+      <h2 class="h-l split"><span lang="tr">Üç adımda bir tur</span><span lang="en">A turn in three steps</span></h2>
+    </div>
+    <div class="steps" data-stagger=".1">
+      <div class="step reveal"><div class="em">🎲</div><h3><span lang="tr">Zar at</span><span lang="en">Roll</span></h3><p><span lang="tr">İki zar at; her 5 karen için +2 asker daha gelir.</span><span lang="en">Roll two dice, plus 2 soldiers for every 5 tiles you hold.</span></p></div>
+      <div class="step reveal"><div class="em">🛡️</div><h3><span lang="tr">Yerleştir</span><span lang="en">Place</span></h3><p><span lang="tr">Askerleri kendi karelerine dağıt: +1, +5 ya da tümü. Yanlış mı koydun? Geri al.</span><span lang="en">Spread soldiers over your tiles: +1, +5 or all. Misplaced? Undo.</span></p></div>
+      <div class="step reveal"><div class="em">⚔️</div><h3><span lang="tr">Saldır</span><span lang="en">Attack</span></h3><p><span lang="tr">2+ askerli karenden komşuya saldır; rozet kazanma ihtimalini gösterir. Her zar turunda büyük atan kazanır, eşitlikte savunan.</span><span lang="en">Attack a neighbour from a tile with 2+ soldiers; a badge shows your odds. Each roll the higher die wins, ties go to the defender.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="dene" style="padding-top:0">
+  <div class="wrap">
+    <div class="roll reveal zoom">
+      <div>
+        <p class="eyebrow"><span lang="tr">Dene</span><span lang="en">Try it</span></p>
+        <h2 class="h-l"><span lang="tr">Bu turda kaç asker?</span><span lang="en">How many soldiers this turn?</span></h2>
+        <label class="tiles"><span lang="tr">Kare sayın:</span><span lang="en">Your tiles:</span> <input id="tileRange" type="range" min="1" max="40" value="12"> <b id="tileVal">12</b></label>
+        <div class="result" id="result">–<small id="resultNote"><span lang="tr">Zarları atmak için düğmeye bas.</span><span lang="en">Press the button to roll.</span></small></div>
+        <div class="btns"><button class="btn" id="rollBtn" type="button" data-magnet>🎲 <span lang="tr">Zar at</span><span lang="en">Roll</span></button></div>
+      </div>
+      <div class="tray" aria-hidden="true"><div class="die" id="d1"></div><div class="die" id="d2"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Mevsimler</span><span lang="en">Seasons</span></p>
+      <h2 class="h-l split"><span lang="tr">Her mevsim üç tur sürer</span><span lang="en">Every season lasts three turns</span></h2>
+    </div>
+    <div class="seasons" id="seasons" data-stagger=".08">
+      <div class="season reveal now" style="--sc:#7be08a"><span class="em">🌱</span><h3><span lang="tr">İlkbahar</span><span lang="en">Spring</span></h3><p><span lang="tr">Zara +2 asker.</span><span lang="en">+2 soldiers on the roll.</span></p></div>
+      <div class="season reveal" style="--sc:#ffcf4a"><span class="em">☀️</span><h3><span lang="tr">Yaz</span><span lang="en">Summer</span></h3><p><span lang="tr">Etkisi yok; savaş mevsimi.</span><span lang="en">No effect; fighting season.</span></p></div>
+      <div class="season reveal" style="--sc:#ff8a3d"><span class="em">🍂</span><h3><span lang="tr">Sonbahar</span><span lang="en">Autumn</span></h3><p><span lang="tr">Gelir 1,5 katına çıkar.</span><span lang="en">Income ×1.5.</span></p></div>
+      <div class="season reveal" style="--sc:#9fd8ff"><span class="em">❄️</span><h3><span lang="tr">Kış</span><span lang="en">Winter</span></h3><p><span lang="tr">Karlı karelere saldırı 2 asker götürür.</span><span lang="en">Attacking snowy tiles costs 2 soldiers.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Liderini seç</span><span lang="en">Pick your leader</span></p>
+      <h2 class="h-l split"><span lang="tr">Dört lider, dört oyun tarzı</span><span lang="en">Four leaders, four ways to play</span></h2>
+    </div>
+    <div class="leaders" data-stagger=".08">
+      <div class="leader reveal" style="--r:-2deg"><div class="em">⚔️</div><h3><span lang="tr">Komutan</span><span lang="en">Commander</span></h3><p><span lang="tr">Saldırırken eşit zarlar senin lehine sayılır.</span><span lang="en">When attacking, tied dice count in your favour.</span></p></div>
+      <div class="leader reveal" style="--r:1.5deg"><div class="em">💰</div><h3><span lang="tr">Ekonomist</span><span lang="en">Economist</span></h3><p><span lang="tr">Her kareden +1 altın ek gelir.</span><span lang="en">+1 extra gold from every tile.</span></p></div>
+      <div class="leader reveal" style="--r:-1deg"><div class="em">🏰</div><h3><span lang="tr">Kale Ustası</span><span lang="en">Castellan</span></h3><p><span lang="tr">Savunurken her kare +1 asker sayılır.</span><span lang="en">When defending, every tile counts +1 soldier.</span></p></div>
+      <div class="leader reveal" style="--r:2deg"><div class="em">🚩</div><h3><span lang="tr">Seferber</span><span lang="en">Recruiter</span></h3><p><span lang="tr">Her tur zara ek +3 asker.</span><span lang="en">+3 extra soldiers on every roll.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Pazar</span><span lang="en">Market</span></p>
+      <h2 class="h-l split"><span lang="tr">Altınını akıllıca harca</span><span lang="en">Spend your gold wisely</span></h2>
+      <p class="reveal"><span lang="tr">Her karen tur başına altın getirir. Zar attıktan sonra keseyi aç; her karede tek yapı olur, kare düşerse yapı da el değiştirir.</span><span lang="en">Every tile earns gold each turn. After rolling, open the purse; one building per tile, and if the tile falls the building changes hands.</span></p>
+    </div>
+    <div class="market" data-stagger=".05">
+      <div class="price reveal"><div><b>+3 <span lang="tr">asker</span><span lang="en">soldiers</span></b></div><span class="coin">10</span></div>
+      <div class="price reveal"><div><b><span lang="tr">Tarafsız kare</span><span lang="en">Neutral tile</span></b><span lang="tr">komşu</span><span lang="en">next to you</span></div><span class="coin">12</span></div>
+      <div class="price reveal"><div><b><span lang="tr">Köy</span><span lang="en">Village</span></b></div><span class="coin">20</span></div>
+      <div class="price reveal"><div><b><span lang="tr">Gözetleme Kulesi</span><span lang="en">Watchtower</span></b><span lang="tr">2 kare görüş, savunma +1</span><span lang="en">2-tile vision, +1 defense</span></div><span class="coin">15</span></div>
+      <div class="price reveal"><div><b>Sur</b><span lang="tr">savunma +2</span><span lang="en">+2 defense</span></div><span class="coin">15</span></div>
+      <div class="price reveal"><div><b><span lang="tr">Kışla</span><span lang="en">Barracks</span></b><span lang="tr">her tur +2 asker</span><span lang="en">+2 soldiers per turn</span></div><span class="coin">25</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Modlar</span><span lang="en">Modes</span></p>
+      <h2 class="h-l split"><span lang="tr">Yalnız, arkadaşınla ya da dünyayla</span><span lang="en">Alone, with a friend or the world</span></h2>
+    </div>
+    <div class="feats" data-stagger=".08">
+      <div class="feat reveal"><div class="ico">🗺️</div><h3><span lang="tr">Yeni sefer</span><span lang="en">New campaign</span></h3><p><span lang="tr">10×10'dan 20×40'a harita, kıta ya da adalar; üç zorluk ve harita tohumu ile aynı haritayı yeniden oyna.</span><span lang="en">Maps from 10×10 to 20×40, continent or islands; three difficulties, and a map seed to replay the same map.</span></p></div>
+      <div class="feat reveal"><div class="ico">📜</div><h3><span lang="tr">Hazır seferler</span><span lang="en">Campaigns</span></h3><p><span lang="tr">Adım adım rehberli eğitim seferi ve tur sınırlı görevler: güçlü bir komşu, karlı topraklarda iki sert rakip…</span><span lang="en">A guided training campaign and turn-limited missions: a powerful neighbour, two tough rivals on snowy land…</span></p></div>
+      <div class="feat reveal"><div class="ico">📅</div><h3><span lang="tr">Günlük meydan okuma</span><span lang="en">Daily challenge</span></h3><p><span lang="tr">Herkes için aynı harita, 30 tur.</span><span lang="en">The same map for everyone, 30 turns.</span></p></div>
+      <div class="feat reveal"><div class="ico">🌐</div><h3><span lang="tr">Çevrimiçi</span><span lang="en">Online</span></h3><p><span lang="tr">Kodu arkadaşına gönder, sırası gelince oynasın. Maç bulutta kayıtlı; istediğin an dön.</span><span lang="en">Send a code to a friend and play when it's your turn. The match lives in the cloud; come back any time.</span></p></div>
+      <div class="feat reveal"><div class="ico">👥</div><h3><span lang="tr">Aynı cihazda</span><span lang="en">Same device</span></h3><p><span lang="tr">Yapay zekâ yerine arkadaşınla, telefonu sırayla elden ele geçirerek.</span><span lang="en">Play a friend instead of the AI, passing the phone between turns.</span></p></div>
+      <div class="feat reveal"><div class="ico">🏆</div><h3><span lang="tr">Başarımlar ve bulut</span><span lang="en">Achievements and cloud</span></h3><p><span lang="tr">Play Oyunlar ve Game Center başarımları; giriş yaparsan seferlerin buluta yedeklenir. Altı dil.</span><span lang="en">Play Games and Game Center achievements; sign in to back your campaigns up to the cloud. Six languages.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Görseller</span><span lang="en">Screenshots</span></p>
+      <h2 class="h-l split"><span lang="tr">Adalar, kaleler, zarlar</span><span lang="en">Islands, castles, dice</span></h2>
+    </div>
+    <div class="gallery reveal" lang="tr">
+      <figure><img src="img/tr/01_menu.jpg" alt="Yeni sefer" loading="lazy"><figcaption>Yeni sefer</figcaption></figure>
+      <figure><img src="img/tr/02_dice.jpg" alt="Zar" loading="lazy"><figcaption>Zar at</figcaption></figure>
+      <figure><img src="img/tr/03_attack.jpg" alt="Saldırı" loading="lazy"><figcaption>Saldırı</figcaption></figure>
+      <figure><img src="img/tr/04_market.jpg" alt="Pazar" loading="lazy"><figcaption>Pazar</figcaption></figure>
+      <figure><img src="img/tr/05_rules.jpg" alt="Kurallar" loading="lazy"><figcaption>Kurallar</figcaption></figure>
+    </div>
+    <div class="gallery reveal" lang="en">
+      <figure><img src="img/en/01_menu.jpg" alt="New campaign" loading="lazy"><figcaption>New campaign</figcaption></figure>
+      <figure><img src="img/en/02_dice.jpg" alt="Dice" loading="lazy"><figcaption>Roll</figcaption></figure>
+      <figure><img src="img/en/03_attack.jpg" alt="Attack" loading="lazy"><figcaption>Attack</figcaption></figure>
+      <figure><img src="img/en/04_market.jpg" alt="Market" loading="lazy"><figcaption>Market</figcaption></figure>
+      <figure><img src="img/en/05_rules.jpg" alt="Rules" loading="lazy"><figcaption>Rules</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">İndir</span><span lang="en">Download</span></p>
+      <h2 class="h-l split"><span lang="tr">Krallık hazırlanıyor</span><span lang="en">The kingdom is getting ready</span></h2>
+    </div>
+    <div class="dls" data-stagger=".1">
+      <div class="dl reveal"><div class="pf">🤖</div><h3>Android</h3><p>Google Play</p><span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+      <div class="dl reveal"><div class="pf">📱</div><h3>iPhone · iPad</h3><p>App Store</p><span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+      <div class="dl reveal"><div class="pf">💻</div><h3>Mac</h3><p><span lang="tr">Apple çipli Mac</span><span lang="en">Apple silicon Mac</span></p><span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Reklam, analiz ya da izleme yok; kişisel veri satılmaz. Hesap açmadan oynarsan hiçbir veri cihazından çıkmaz.</span><span lang="en">No ads, analytics or tracking, and no personal data is sold. If you play without an account, nothing leaves your device.</span></p>
+        <p><span lang="tr">Giriş isteğe bağlı: giriş yaparsan oyun verilerin buluta yedeklenir ve çevrimiçi maçlarda görünen adın diğer oyunculara görünür. Hesabını uygulamanın içinden silebilirsin.</span><span lang="en">Signing in is optional: if you do, your game data is backed up to the cloud and your display name is visible to other players in online matches. You can delete your account from inside the app.</span></p>
+        <div class="links"><a class="btn ghost" href="privacy.html"><span lang="tr">Gizlilik politikası</span><span lang="en">Privacy policy</span></a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketfarm/index.html" style="--pc:var(--farm)"><img src="../../assets/icons/pocketfarm.png" alt=""><span><b>PocketFarm</b><small lang="tr">Çiftlik oyunu</small><small lang="en">Farming game</small></span></a>
+      <a class="reveal" href="../pocketville/index.html" style="--pc:var(--ville)"><img src="../../assets/icons/pocketville.png" alt=""><span><b>PocketVille</b><small lang="tr">Şehir kurma</small><small lang="en">City builder</small></span></a>
+      <a class="reveal" href="../synapse/index.html" style="--pc:var(--syn)"><img src="../../assets/icons/synapse.png" alt=""><span><b>Synapse</b><small lang="tr">Telefon ↔ Mac</small><small lang="en">Phone ↔ Mac</small></span></a>
+      <a class="reveal" href="../zeta/index.html" style="--pc:var(--zeta)"><img src="../../assets/icons/zeta.png" alt=""><span><b>Zeta</b><small lang="tr">Arayüz paketi</small><small lang="en">Interface suite</small></span></a>
+    </div>
+  </div>
+</section>
+
+<script src="../../assets/site.js?v=4"></script>
+<script>
+(function () {
+  // pip layouts on a 3x3 grid (cells 1..9)
+  var PIPS = { 1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
+  function face(n) {
+    var f = document.createElement("div"); f.className = "f f" + n;
+    for (var c = 1; c <= 9; c++) { var i = document.createElement("i"); if (PIPS[n].indexOf(c) < 0) i.style.visibility = "hidden"; f.appendChild(i); }
+    return f;
+  }
+  function build(d) { for (var n = 1; n <= 6; n++) d.appendChild(face(n)); }
+  document.querySelectorAll("[data-die], .tray .die").forEach(build);
+
+  // rotation that brings face n to the front
+  var FRONT = { 1: [0, 0], 6: [0, 180], 2: [0, -90], 5: [0, 90], 3: [-90, 0], 4: [90, 0] };
+  var spins = [0, 0];
+  var d1 = document.getElementById("d1"), d2 = document.getElementById("d2");
+  [d1, d2].forEach(function (d) { d.style.transform = "rotateX(-20deg) rotateY(25deg)"; });
+  var range = document.getElementById("tileRange"), tv = document.getElementById("tileVal");
+  range.addEventListener("input", function () { tv.textContent = range.value; });
+  var res = document.getElementById("result");
+  function roll() {
+    var a = 1 + Math.floor(Math.random() * 6), b = 1 + Math.floor(Math.random() * 6);
+    [[d1, a, 0], [d2, b, 1]].forEach(function (x) {
+      spins[x[2]] += 2 + Math.floor(Math.random() * 2);
+      var r = FRONT[x[1]], s = spins[x[2]] * 360;
+      x[0].style.transform = "rotateX(" + (r[0] + s - 20) + "deg) rotateY(" + (r[1] + s + 25) + "deg)";
+    });
+    var bonus = Math.floor(range.value / 5) * 2, total = a + b + bonus;
+    setTimeout(function () {
+      var tr = document.documentElement.dataset.lang === "tr";
+      res.innerHTML = "+" + total + " " + (tr ? "asker" : "soldiers") +
+        "<small>" + a + " + " + b + (tr ? " zar, " : " on the dice, ") + "+" + bonus + (tr ? " kare bonusu (" + range.value + " kare)" : " tile bonus (" + range.value + " tiles)") + "</small>";
+      res.animate([{ transform: "scale(.7)", opacity: 0 }, { transform: "scale(1.08)" }, { transform: "scale(1)", opacity: 1 }], { duration: 500, easing: "ease-out" });
+    }, 1000);
+  }
+  document.getElementById("rollBtn").addEventListener("click", roll);
+
+  // cycle seasons
+  var ss = document.querySelectorAll("#seasons .season"), si = 0;
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(function () {
+    ss[si].classList.remove("now"); si = (si + 1) % ss.length; ss[si].classList.add("now");
+  }, 2400);
+})();
+</script>
+</body>
+</html>

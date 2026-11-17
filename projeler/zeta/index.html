@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="zeta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zeta — Serkan Tiken</title>
+<meta name="description" content="Zeta: canlı karolar, yeniden. Telefon, tablet ve televizyon için sıfırdan yazılmış bir arayüz paketi: canlı karolar, hub'lar, turnike animasyonları. Sunucu yok, reklam yok, hesap yok.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="Zeta — canlı karolar, yeniden">
+<meta property="og:image" content="img/tablet-baslangic.jpg">
+<link rel="icon" href="../../assets/icons/zeta.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=Open+Sans:wght@300;400;600&family=Literata:opsz,wght@7..72,400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=4">
+<style>
+  body { --c: #2194f0; --c2: #00bad2; }
+  .metro { font-family: "Open Sans", sans-serif; font-weight: 300; letter-spacing: -.03em; text-transform: lowercase; }
+  .phero { background: radial-gradient(90% 70% at 70% 30%, color-mix(in srgb, var(--c) 35%, #120a18) 0%, #0d0a14 55%, var(--bg) 100%); transition: background .6s; }
+  .phero h1.metro { font-size: clamp(72px, 13vw, 180px); line-height: .9; font-weight: 300; }
+  .phero h1.metro .dot { color: var(--c); transition: color .4s; }
+
+  /* live tiles — drawn the way Zeta draws them today (W10MTileChrome / TileLayout):
+     8dp corners, a 45% accent fill with a thin light outline, the glyph a share of the tile's size,
+     the count beside the glyph as tall as its drawing, faces that slide up (14 s front, 6 s back). */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); grid-auto-flow: dense; gap: 8px;
+    aspect-ratio: 4 / 5; perspective: 1400px; width: 100%; max-width: 480px; margin-inline: auto; font-family: "Open Sans", "Segoe UI", sans-serif; }
+  .tile { container-type: size; min-width: 0; min-height: 0; width: 100%; height: 100%; position: relative; color: #fff; cursor: pointer;
+    border-radius: 8px; overflow: hidden; transform-origin: 0 50%;
+    background: color-mix(in srgb, var(--c) 45%, transparent); box-shadow: inset 0 0 0 1px rgba(255,255,255,.32);
+    backdrop-filter: blur(2px); transition: background .4s; --g: 30cqw; }
+  .tile.wide { grid-column: span 2; --g: 34cqh; }
+  .tile.big { grid-column: span 2; grid-row: span 2; --g: 24cqw; }
+  .tile .face { position: absolute; inset: 0; }
+  .tile .gc { position: absolute; left: 50%; top: 50%; translate: -50% calc(-50% - 6px); display: flex; align-items: flex-end; }
+  .tile .gc svg { width: var(--g); height: var(--g); fill: currentColor; flex: none; }
+  /* the count: figures as tall as the glyph's drawing (box less a twelfth each side), 0.2 glyph apart, on its foot */
+  .tile .count { font-weight: 400; font-size: calc(var(--g) * .8333 / .71); line-height: .71; margin-left: calc(var(--g) * .2); margin-bottom: calc(var(--g) * .0833); letter-spacing: 0; }
+  .tile .label { position: absolute; left: 8px; right: 28px; bottom: 6px; font-size: 13px; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .info { position: absolute; left: 8px; right: 8px; top: 6px; bottom: 26px; display: flex; flex-direction: column; }
+  .tile .fig { font-weight: 300; font-size: 25cqw; line-height: 1.05; letter-spacing: -.02em; }
+  .tile .sm { font-size: 12px; opacity: .9; }
+  .tile .cal .fig { font-size: 30cqw; line-height: 1; }
+  .tile .cal .ev { font-size: 12px; line-height: 1.3; margin-top: auto; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .tile .cal .ev b { font-weight: 600; margin-right: 4px; }
+  .tile .wxi { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+  .tile .wxi .now { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 8px; }
+  .tile .wxi .now .fig { font-size: 30cqh; }
+  .tile .wxi .now .sm { grid-column: 1 / -1; font-size: 14px; }
+  .tile .wx { width: 16cqh; height: 16cqh; fill: currentColor; }
+  .tile .fc { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; }
+  .tile .fc span:last-child { font-size: 16px; }
+  .tile .bk { padding: 8px 9px; display: flex; flex-direction: column; justify-content: space-between; translate: 0 100%; }
+  .tile .cap { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,.75); white-space: nowrap; overflow: hidden; }
+  .tile .cap .ci { width: 15px; height: 15px; fill: currentColor; flex: none; }
+  .tile .msg { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tile .msg b { font-weight: 400; font-size: 16px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .msg > span { font-size: 13px; line-height: 16px; opacity: .9; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  /* small screens: the tiles shrink, so the words make room */
+  @container (max-width: 110px) {
+    .tile .label { font-size: 11px; left: 6px; right: 4px; bottom: 4px; }
+    .tile .info { left: 6px; right: 6px; top: 4px; }
+    .tile .cal .ev { display: none; }
+    .tile .bk { padding: 6px 7px; }
+    .tile .msg b { font-size: 13px; }
+    .tile .msg > span { font-size: 11px; line-height: 13px; }
+  }
+  @container (max-height: 110px) {
+    .tile .wxi { bottom: 22px; }
+    .tile .wxi .now .sm { display: none; }
+    .tile .fc { gap: 1px; font-size: 10px; }
+    .tile .fc span:last-child { font-size: 13px; }
+    .tile .label { font-size: 11px; left: 6px; bottom: 4px; }
+  }
+  .tile.live .front { animation: slideFront 20s cubic-bezier(.4,0,.2,1) infinite; animation-delay: calc(var(--slot) * .9s); }
+  .tile.live .bk { animation: slideBack 20s cubic-bezier(.4,0,.2,1) infinite; animation-delay: calc(var(--slot) * .9s); }
+  @keyframes slideFront { 0%, 66.9% { translate: 0 0; } 70%, 96.9% { translate: 0 -100%; } 100% { translate: 0 0; } }
+  @keyframes slideBack { 0%, 66.9% { translate: 0 100%; } 70%, 96.9% { translate: 0 0; } 100% { translate: 0 100%; } }
+
+  /* ---------- the three Start layouts ---------- */
+  .starts { position: relative; width: 100%; max-width: 480px; margin-inline: auto; aspect-ratio: 4 / 5; }
+  .starts > .tiles, .starts > .aura, .starts > .paperstart { position: absolute; inset: 0; }
+  .starts[data-view="mozaik"] > .aura, .starts[data-view="mozaik"] > .paperstart,
+  .starts[data-view="aura"] > .tiles, .starts[data-view="aura"] > .paperstart,
+  .starts[data-view="paper"] > .tiles, .starts[data-view="paper"] > .aura { visibility: hidden; pointer-events: none; }
+  .layouts { display: flex; justify-content: center; gap: 28px; margin-top: 22px; }
+  .layouts button { background: none; border: 0; cursor: pointer; padding: 4px 0; font: 300 26px/1 "Open Sans", sans-serif; letter-spacing: -.02em; color: rgba(255,255,255,.4); transition: color .3s; }
+  .layouts button:hover { color: rgba(255,255,255,.75); }
+  .layouts button[aria-selected="true"] { color: #fff; }
+  .layouts button[aria-selected="true"]::after { content: ""; display: block; height: 2px; margin-top: 6px; background: var(--c); }
+
+  /* Aura (HomeHubScreen's Zune list): clock thin and large, date, weather, then every hub name at
+     one size (Light, tight), the count in the accent after the word, a muted live line under it, a
+     strip of favourites on the left; no ground of its own, the page shows through. Motion from ZuneMotion.kt. */
+  .aura { overflow: hidden; container-type: size; font-family: "Open Sans", sans-serif; color: #fff; }
+  /* the strip (QuickplayStripSquare): a 72dp column of small squares down the left, the first at
+     the foot and the rest climbing over it - pins, then what was lately used */
+  .aura .strip { position: absolute; left: 6px; width: 62px; top: 0; bottom: 18px; display: flex; flex-direction: column-reverse; gap: 4px; z-index: 2; cursor: pointer; transition: opacity 200ms; }
+  .aura .sq { flex: none; width: 56px; height: 56px; border-radius: 6px; background: var(--c) center / cover; display: grid; place-items: center; overflow: hidden; transition: background-color .4s; }
+  .aura .sq svg { width: 26px; height: 26px; fill: #fff; }
+  .aura .sq { position: relative; }
+  .aura .sq.qnote i { position: absolute; left: 5px; bottom: 4px; font: 400 11px/1.1 "Open Sans", sans-serif; color: #1b1b1a; font-style: normal; }
+  .aura .strip:hover .sq { filter: brightness(1.12); }
+  /* the list steps aside as quickplay widens (400 ms, FastOutSlowIn): right by 70%, down to 75%,
+     a quarter-turn's tilt from its right edge, faded to 30% */
+  .aura .zlist { transition: transform 400ms cubic-bezier(.4,0,.2,1), opacity 400ms cubic-bezier(.4,0,.2,1); transform-origin: 100% 50%; }
+  .aura.qopen .zlist { transform: perspective(1400px) translateX(70%) scale(.75) rotateY(25deg); opacity: .3; cursor: pointer; }
+  .aura.qopen .zlist > * { pointer-events: none; }
+  .aura.qopen .strip { opacity: 0; pointer-events: none; }
+  .aura .qp { position: absolute; left: 0; top: 0; bottom: 0; width: 15%; overflow: hidden; opacity: 0; pointer-events: none; z-index: 2;
+    transition: width 400ms cubic-bezier(.4,0,.2,1), opacity 250ms cubic-bezier(.4,0,.2,1); }
+  .aura.qopen .qp { width: 85%; opacity: 1; pointer-events: auto; transition-delay: 0s, 120ms; }
+  .aura .qp-in { width: 85cqw; height: 100%; overflow-y: auto; scrollbar-width: none; padding: 26px 8px 28px 16px; box-sizing: border-box;
+    mask-image: linear-gradient(#000 88%, transparent); -webkit-mask-image: linear-gradient(#000 88%, transparent); }
+  .aura .qp-in::-webkit-scrollbar { display: none; }
+  .aura .qtitle { font-weight: 300; font-size: 54px; line-height: 1.1; letter-spacing: -2px; margin-bottom: 14px; }
+  .aura .qe h5 { margin: 18px 0 10px; font-weight: 300; font-size: 22px; letter-spacing: 0; color: var(--c); }
+  .aura .qrow { display: flex; gap: 8px; flex-wrap: nowrap; align-items: flex-start; }
+  .aura .qsq { position: relative; flex: none; width: 72px; height: 72px; border-radius: 6px; background: var(--c) center / cover; display: grid; place-items: center; overflow: hidden; }
+  .aura .qsq.big { width: 150px; height: 150px; }
+  .aura .qsq em { position: absolute; left: 6px; bottom: 5px; right: 6px; font: 300 12px/1.2 "Open Sans", sans-serif; font-style: normal; color: #fff; }
+  .aura .qsq.big em { font-size: 15px; }
+  .aura .qsq.app svg { width: 34px; height: 34px; fill: #fff; }
+  .aura .qsq.small { width: 52px; height: 52px; }
+  .aura .qsq.small svg { width: 26px; height: 26px; }
+  .aura .qsq.qnote b { position: absolute; left: 6px; top: 6px; right: 6px; font: 600 11px/1.2 "Open Sans", sans-serif; color: #1b1b1a; }
+  .aura .pin { display: flex; flex-direction: column; gap: 4px; width: 72px; }
+  .aura .pin small, .aura .qapp small { font-size: 11px; color: rgba(255,255,255,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .aura .lastp { display: flex; gap: 14px; margin-bottom: 8px; }
+  .aura .lastp > div { display: flex; flex-direction: column; padding-top: 4px; min-width: 0; }
+  .aura .lt { font-weight: 300; font-size: 26px; line-height: 30px; }
+  .aura .la { font-size: 14px; color: rgba(255,255,255,.62); }
+  .aura .act { font-weight: 300; font-size: 20px; color: var(--c); margin-top: 10px; cursor: pointer; }
+  .aura .notes { flex-direction: column; }
+  .aura .ncard { display: grid; gap: 2px; padding: 9px 11px; border-radius: 6px; color: #1b1b1a; max-width: 300px; }
+  .aura .ncard b { font-size: 14px; font-weight: 600; }
+  .aura .ncard span { font-size: 13px; opacity: .85; }
+  .aura .ncard small { font-size: 11px; opacity: .65; }
+  .aura .apps { gap: 10px; }
+  .aura .qapp { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 62px; }
+  .aura .qhint { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,.5); margin: 20px 0 0; max-width: 300px; }
+  /* sections come in the Zune way: flat, from the left, one after another */
+  .aura.qopen .qe { animation: zIn 294ms cubic-bezier(.1,.9,.2,1) both; animation-delay: calc(140ms + var(--i) * 30ms); }
+  .aura .zlist { position: absolute; left: 72px; right: 16px; top: 0; bottom: 0; padding: 30px 0 28px; z-index: 1; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain;
+    mask-image: linear-gradient(#000 86%, transparent); -webkit-mask-image: linear-gradient(#000 86%, transparent); }
+  .aura .zlist::-webkit-scrollbar { display: none; }
+  .aura .zclock { font-weight: 300; font-size: 64px; line-height: 1; letter-spacing: -.03em; height: 66px; overflow: hidden; }
+  .aura .roll { display: inline-block; }
+  .aura .zdate { font-weight: 300; font-size: 15px; color: rgba(255,255,255,.62); margin-top: 2px; }
+  .aura .zwx { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-weight: 300; font-size: 17px; }
+  .aura .zwx svg { width: 18px; height: 18px; fill: #fff; }
+  .aura .zwx small { font-size: 14px; color: rgba(255,255,255,.62); }
+  .aura .zhubs { list-style: none; margin: 12px 0 0; padding: 0; }
+  .aura .zrow { cursor: pointer; }
+  .aura .zt { font-weight: 300; font-size: 34px; line-height: 1.08; letter-spacing: -2px; }
+  .aura .zc { font-size: 15px; font-weight: 400; color: var(--c); margin-left: 6px; vertical-align: top; position: relative; top: 4px; }
+  .aura .zl { display: block; height: 18px; overflow: hidden; font-size: 13px; color: rgba(255,255,255,.62); margin: -1px 0 3px 2px; }
+  .aura .zli { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .aura .zend { font-weight: 300; font-size: 17px; color: rgba(255,255,255,.62); margin-top: 6px; }
+  .aura .zend i { font-style: normal; color: rgba(255,255,255,.35); margin: 0 10px; }
+  /* coming in: each word slides 96dp from the left and fades in, 3% of 640 ms after the one before */
+  .aura.enter .zi, .aura.enter .sq { animation: zIn 294ms cubic-bezier(.1,.9,.2,1) both; animation-delay: calc(var(--i) * 19ms); }
+  @keyframes zIn { from { translate: -96px 0; opacity: 0; } }
+  /* news: the name arrives in the accent and settles to the ink (600 ms held, 700 ms to fade) */
+  .aura.enter .news .zt { animation: glint 1.3s ease both; animation-delay: .3s; }
+  @keyframes glint { 0%, 46% { color: var(--c); } 100% { color: #fff; } }
+  /* going out: the touched word zooms through from its left edge, the rest slide left and fade */
+  .aura.leave .zi, .aura.leave .sq { animation: zOut 260ms cubic-bezier(.55,0,.9,.6) forwards; animation-delay: calc(var(--i) * 13ms); }
+  @keyframes zOut { to { translate: -288px 0; opacity: 0; } }
+  .aura.leave .zi.hit { animation: zZoom 520ms cubic-bezier(.4,0,.6,1) forwards; transform-origin: 0 50%; }
+  @keyframes zZoom { 0% { scale: 1; opacity: 1; } 60% { opacity: .78; } 100% { scale: 5.5; opacity: 0; } }
+  .aura .zli.up { animation: lineUp 300ms ease forwards; }
+  .aura .zli.in { animation: lineIn 300ms ease both; }
+  @keyframes lineUp { to { translate: 0 -100%; opacity: 0; } }
+  @keyframes lineIn { from { translate: 0 100%; opacity: 0; } }
+  .aura .roll.out { animation: rollOut 800ms ease forwards; }
+  .aura .roll.in { animation: rollIn 800ms ease both; }
+  @keyframes rollOut { to { translate: 0 -50%; opacity: 0; } }
+  @keyframes rollIn { from { translate: 0 50%; opacity: 0; } }
+
+  /* Paper (ui/paper/Paper.kt): a plain page (#F1EEE6), ink #1B1B1A, rules #2A2A2A, Literata;
+     the tiles are ruled boxes in a soft wash of the accent. Nothing moves. */
+  .paperstart { border-radius: 12px; background: #F1EEE6; padding: 12px 12px 40px; color: #1B1B1A; }
+  .paperstart .ptiles { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); grid-auto-flow: dense; gap: 7px; height: 100%; }
+  .paperstart .tile { background: color-mix(in srgb, var(--c) 34%, #F1EEE6); color: #1B1B1A; box-shadow: inset 0 0 0 1.5px #2A2A2A; backdrop-filter: none; animation: none !important; font-family: "Literata", Georgia, serif; cursor: default; }
+  .paperstart .tile .face { animation: none !important; translate: none !important; }
+  .paperstart .tile .label { color: #1B1B1A; }
+  .paperstart .tile .count, .paperstart .tile .fig { font-weight: 400; }
+  .paperstart .tile .sm { opacity: 1; color: #5E5C57; }
+  .paperstart .ppager { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 18px; font: 15px "Literata", Georgia, serif; color: #5E5C57; }
+  .paperstart .ppager span { font-size: 20px; color: #1B1B1A; }
+  .paperstart .ppager b { font-weight: 400; }
+  @media (prefers-reduced-motion: reduce) { .aura *, .aura { animation: none !important; } }
+
+  /* ---------- Paper chosen: the whole page goes on paper (ui/paper/Paper.kt) ----------
+     a plain warm page, ink type in Literata, ruled boxes instead of glass and glow, nothing moving. */
+  html.paper-mode { color-scheme: light;
+    --bg: #F1EEE6; --bg-2: #F8F6F0; --bg-3: #ECE8DE; --line: #B9B5AA; --line-2: #2A2A2A;
+    --ink: #1B1B1A; --ink-2: #3A3835; --muted: #5E5C57;
+    --display: "Literata", Georgia, serif; --sans: "Literata", Georgia, serif; }
+  html.paper-mode body { background: #F1EEE6; color: #1B1B1A; }
+  html.paper-mode *, html.paper-mode *::before, html.paper-mode *::after { animation: none !important; transition: none !important; }
+  html.paper-mode .reveal, html.paper-mode .split .ch { opacity: 1 !important; transform: none !important; translate: none !important; }
+  html.paper-mode .aurora, html.paper-mode .grain, html.paper-mode .gridlines, html.paper-mode .cursor, html.paper-mode .scroll-hint { display: none !important; }
+  html.paper-mode .phero { background: #F1EEE6; }
+  html.paper-mode .metro, html.paper-mode .h-l.metro, html.paper-mode .layouts button { font-family: "Literata", Georgia, serif; font-weight: 400; letter-spacing: -.01em; }
+  html.paper-mode h1, html.paper-mode h2, html.paper-mode h3 { color: #1B1B1A; }
+  html.paper-mode .phero h1.metro .dot, html.paper-mode .grad { color: #1B1B1A; background: none; -webkit-text-fill-color: currentColor; }
+  html.paper-mode .eyebrow { color: #5E5C57; }
+  html.paper-mode .eyebrow::before { background: #2A2A2A; }
+  html.paper-mode .nav.solid { background: #F1EEE6; backdrop-filter: none; -webkit-backdrop-filter: none; border-color: #2A2A2A; }
+  html.paper-mode .nav-links { background: transparent; }
+  @media (max-width: 1020px) { html.paper-mode .nav-links { background: #F8F6F0; border: 1.5px solid #2A2A2A; } }
+  html.paper-mode .progress { background: #1B1B1A; }
+  html.paper-mode .btn, html.paper-mode .btn.ghost { background: transparent; color: #1B1B1A; border: 1.5px solid #2A2A2A; box-shadow: none; border-radius: 8px; }
+  html.paper-mode .btn::after { display: none; }
+  html.paper-mode .btn.off { border-style: dashed; color: #5E5C57; }
+  html.paper-mode .chip, html.paper-mode .chips li { border-color: #2A2A2A; color: #1B1B1A; background: transparent; }
+  html.paper-mode .chip.hot { background: color-mix(in srgb, var(--c) 30%, #F1EEE6); color: #1B1B1A; border: 1.5px solid #2A2A2A; }
+  html.paper-mode .app-id img { box-shadow: none; outline: 1.5px solid #2A2A2A; border-radius: 20px; }
+  html.paper-mode .swatches button[aria-pressed="true"] { outline-color: #1B1B1A; }
+  html.paper-mode .layouts button { color: #8F8C84; }
+  html.paper-mode .layouts button[aria-selected="true"] { color: #1B1B1A; }
+  html.paper-mode .layouts button[aria-selected="true"]::after { background: #1B1B1A; }
+  html.paper-mode .hint { color: #5E5C57; }
+  html.paper-mode .paperstart { background: #F8F6F0; box-shadow: inset 0 0 0 1.5px #2A2A2A; }
+  html.paper-mode .stats { background: #2A2A2A; border: 1.5px solid #2A2A2A; }
+  html.paper-mode .stat { background: #F8F6F0; }
+  html.paper-mode .stat b, html.paper-mode .kv b { color: #1B1B1A; }
+  html.paper-mode .kv div { border-color: #B9B5AA; }
+  html.paper-mode .feat, html.paper-mode .dl, html.paper-mode .note, html.paper-mode .privacy, html.paper-mode .pager a, html.paper-mode .sec, html.paper-mode .plat {
+    background: #F8F6F0; border: 1.5px solid #2A2A2A; box-shadow: none; }
+  html.paper-mode .feat::before { display: none; }
+  html.paper-mode .privacy .shield { filter: grayscale(1); }
+  html.paper-mode .hub .e { filter: grayscale(1); }
+  html.paper-mode .hub { background: color-mix(in srgb, var(--c) 30%, #F1EEE6); color: #1B1B1A; box-shadow: inset 0 0 0 1.5px #2A2A2A; }
+  html.paper-mode .shots-row img, html.paper-mode .gifs img, html.paper-mode .tv figure, html.paper-mode .gallery figure { border: 1.5px solid #2A2A2A; box-shadow: none; }
+  html.paper-mode .shots-row figcaption, html.paper-mode .gifs figcaption { color: #5E5C57; }
+  html.paper-mode .gifs figcaption b { color: #1B1B1A; }
+  html.paper-mode .paper { box-shadow: inset 0 0 0 1.5px #2A2A2A; }
+  html.paper-mode .foot { border-color: #2A2A2A; }
+  html.paper-mode .foot .big { color: rgba(0,0,0,.06); }
+  html.paper-mode .note a, html.paper-mode .privacy a:not(.btn) { color: #1B1B1A !important; text-decoration: underline; }
+
+  /* ---------- tablet and TV mockups, each turning through its device's layouts ---------- */
+  .dev-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: end; }
+  .dev { display: flex; flex-direction: column; align-items: center; }
+  .slides { position: relative; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  .slide { position: absolute; inset: 0; margin: 0; translate: 100% 0; transition: translate .8s cubic-bezier(.1,.9,.2,1); }
+  .slide.on { translate: 0 0; }
+  .slide.out { translate: -100% 0; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; }
+  .slide.on img { animation: kb 5s ease-out both; }
+  @keyframes kb { from { scale: 1.06; } to { scale: 1; } }
+  .tv-frame { width: 100%; aspect-ratio: 16 / 9; padding: 10px; border-radius: 12px; background: linear-gradient(#1b1d24, #0c0d11); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.08); }
+  .tv-frame .slides { border-radius: 3px; }
+  .tv-stand { width: 26%; height: 34px; position: relative; }
+  .tv-stand::before { content: ""; position: absolute; left: 50%; top: 0; width: 14%; height: 24px; translate: -50% 0; background: linear-gradient(#2a2d36, #15171d); }
+  .tv-stand::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 10px; border-radius: 10px 10px 4px 4px; background: linear-gradient(#2a2d36, #101217); }
+  .tab-frame { position: relative; width: 100%; aspect-ratio: 16 / 10.4; padding: 16px; border-radius: 28px; background: linear-gradient(145deg, #23262e, #0f1014); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.1); }
+  .tab-frame .slides { border-radius: 12px; }
+  .tab-frame .cam { position: absolute; top: 6px; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: #3a3d48; translate: -50% 0; }
+  .dev-cap { margin-top: 18px; display: flex; gap: 10px; align-items: baseline; font: 300 22px/1.2 "Open Sans", sans-serif; }
+  .dev-kind { color: var(--c); transition: color .4s; }
+  .caps { position: relative; display: inline-grid; }
+  .caps .cap { grid-area: 1 / 1; opacity: 0; translate: 0 10px; transition: opacity .5s, translate .5s cubic-bezier(.1,.9,.2,1); white-space: nowrap; color: var(--ink-2); }
+  .caps .cap.on { opacity: 1; translate: 0 0; }
+  .caps .cap b { font-weight: 400; color: var(--ink); }
+  .dots { display: flex; gap: 8px; margin-top: 12px; }
+  .dots button { width: 22px; height: 4px; border: 0; border-radius: 2px; background: var(--line-2); cursor: pointer; padding: 0; transition: background .3s, width .3s; }
+  .dots button.on { background: var(--c); width: 36px; }
+  @media (max-width: 900px) { .dev-grid { grid-template-columns: 1fr; gap: 40px; } .dev-cap { font-size: 18px; } }
+  html.paper-mode .tv-frame, html.paper-mode .tab-frame { background: #F8F6F0; box-shadow: inset 0 0 0 1.5px #2A2A2A; }
+  html.paper-mode .tv-stand::before, html.paper-mode .tv-stand::after { background: #2A2A2A; }
+  html.paper-mode .tab-frame .cam { background: #2A2A2A; }
+  html.paper-mode .dev-kind { color: #1B1B1A; }
+  html.paper-mode .dots button.on { background: #1B1B1A; }
+  html.paper-mode .slide { translate: none; opacity: 0; }
+  html.paper-mode .slide.on { opacity: 1; }
+  /* turnstile: runs on rotate/translate/opacity so it stacks on top of the tiles' own turning */
+  .tiles.ts .tile { animation: turnIn .7s cubic-bezier(.1,.9,.2,1) both; animation-delay: calc(var(--k) * 45ms); }
+  @keyframes turnIn { from { rotate: y -80deg; translate: -40px 0; opacity: 0; } }
+  .tiles.out .tile { animation: turnOut .45s cubic-bezier(.7,0,.9,.4) forwards; animation-delay: calc(var(--k) * 30ms); }
+  .tiles.out .tile.sel { animation-delay: 480ms; }
+  @keyframes turnOut { to { rotate: y 85deg; translate: 30px 0; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .tile, .tile .face { animation: none !important; } }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .swatches button { width: 34px; height: 34px; border: 0; cursor: pointer; background: var(--s); transition: transform .3s var(--spring); outline-offset: 3px; }
+  .swatches button:hover { transform: scale(1.15) rotate(-6deg); }
+  .swatches button[aria-pressed="true"] { outline: 2px solid #fff; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+  .h-l.metro, .h-m.metro { font-weight: 300; }
+  .section-head .metro { text-transform: lowercase; }
+
+  /* shot rows */
+  .shots-row { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 20px 26px; margin: 0 -20px; }
+  .shots-row figure { margin: 0; flex: 0 0 auto; scroll-snap-align: center; }
+  .shots-row img { height: clamp(320px, 56vh, 540px); width: auto; border-radius: 18px; border: 1px solid var(--line); cursor: zoom-in; transition: transform .5s var(--ease); }
+  .shots-row.land img { height: clamp(200px, 36vh, 360px); }
+  .shots-row img:hover { transform: translateY(-6px); }
+  .shots-row figcaption { max-width: 300px; font-size: 13px; color: var(--ink-2); margin-top: 10px; }
+  .shots-row.land figcaption { max-width: 520px; }
+
+  .kv { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 40px; }
+  .kv div { padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .kv b { display: block; font-family: "Open Sans", sans-serif; font-weight: 600; color: var(--c); margin-bottom: 4px; transition: color .4s; }
+  .kv span { color: var(--ink-2); font-size: 15px; }
+
+  .hubs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .hub { aspect-ratio: 1; background: var(--c); color: #fff; padding: 10px; position: relative; font-family: "Open Sans", sans-serif; transition: background .4s, transform .4s var(--spring); }
+  .hub:nth-child(3n) { background: color-mix(in srgb, var(--c) 75%, #000); }
+  .hub:hover { transform: perspective(500px) rotateX(8deg) rotateY(-8deg) scale(.96); }
+  .hub .e { font-size: 26px; }
+  .hub span { position: absolute; left: 10px; bottom: 8px; font-size: 13px; }
+
+  .gifs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .gifs figure { margin: 0; }
+  .gifs img { width: 100%; border-radius: 18px; border: 1px solid var(--line); }
+  .gifs figcaption { font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+  .gifs figcaption b { color: var(--ink); }
+
+  .tv { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .tv figure { margin: 0; position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); }
+  .tv img { width: 100%; aspect-ratio: 16/9; object-fit: cover; transition: transform 1s var(--ease); cursor: zoom-in; }
+  .tv figure:hover img { transform: scale(1.04); }
+  .tv figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 18px 14px; background: linear-gradient(transparent, rgba(0,0,0,.85)); font-size: 14px; color: #eee; }
+  .tv figcaption b { font-family: "Open Sans"; font-weight: 300; font-size: 26px; display: block; color: #fff; }
+
+  .paper { background: #f3efe6; color: #2b2622; border-radius: 32px; padding: clamp(28px, 5vw, 64px); }
+  .paper .h-l { font-family: "Literata", Georgia, serif; font-weight: 600; text-transform: none; letter-spacing: -.02em; color: #2b2622; }
+  .paper p, .paper .kv span { color: #4a433c; }
+  .paper .kv div { border-color: rgba(0,0,0,.12); }
+  .paper .kv b { color: #2b2622; font-family: Georgia, serif; }
+  .paper .eyebrow { color: #7a6e60; }
+  .paper .shots-row img { border-color: rgba(0,0,0,.15); }
+  .paper .shots-row figcaption { color: #6a6157; }
+  .paper video { width: 100%; border-radius: 14px; border: 1px solid rgba(0,0,0,.15); background: #e9e3d6; }
+
+  @media (max-width: 1020px) { .hubs { grid-template-columns: repeat(4, 1fr); } .gifs, .tv, .kv { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .hubs { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+
+<section class="phero">
+  <div class="aurora" aria-hidden="true" style="--a1:var(--c);--a2:var(--c2);--a3:#0a2a4a;--a4:var(--c)"><b></b><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <div class="phero-grid">
+      <div>
+        <div class="app-id reveal"><img src="../../assets/icons/zeta.png" alt="">
+          <span class="chip hot pulse">Beta · <span lang="tr">ücretsiz, Pro beta boyunca açık</span><span lang="en">free, Pro unlocked during the beta</span></span></div>
+        <h1 class="metro split">zeta<span class="dot">.</span></h1>
+        <p class="lede reveal" style="--d:.4s;font-size:clamp(20px,2.4vw,28px);font-weight:600;color:var(--ink)"><span lang="tr">Canlı karolar, yeniden.</span><span lang="en">Live tiles, again.</span></p>
+        <p class="lede reveal" style="--d:.5s"><span lang="tr">Telefon, tablet ve televizyon için sıfırdan yazılmış bir arayüz paketi: canlı karolar, hub'lar, turnike animasyonları ve ince, büyük yazılar — bugünün Android'inde. Sunucu yok, reklam yok, hesap yok.</span><span lang="en">An interface suite written from scratch for phone, tablet and TV: live tiles, hubs, turnstile animations and big, thin type — on today's Android. No server, no ads, no account.</span></p>
+        <div class="btns reveal" style="--d:.65s" data-release="serkantkn/Zeta">
+          <a class="btn" data-asset=".apk" href="https://github.com/serkantkn/Zeta/releases/download/v0.12.1_beta-6.5/Zeta-0.12.1_beta-6.5.apk" data-magnet><span lang="tr">İndir</span><span lang="en">Download</span> · <span data-version>0.12.1_beta-6.5</span></a>
+          <span class="btn off">Google Play · <span lang="tr">yakında</span><span lang="en">soon</span></span>
+        </div>
+        <div class="swatches reveal" style="--d:.8s" id="swatches" aria-label="Vurgu rengi"></div>
+        <p class="hint reveal" style="--d:.85s"><span lang="tr">Bir renge dokun: bu sayfa da başlatıcı gibi rengini değiştirir. Karoların altından düzeni seç; bir karoya ya da hub adına dokun. Aura'da soldaki şerit quickplay'i açar.</span><span lang="en">Tap a colour: this page changes colour like the launcher. Pick a layout under the tiles; tap a tile or a hub name. In Aura, the strip on the left opens quickplay.</span></p>
+      </div>
+      <div class="reveal zoom" style="--d:.2s">
+        <div class="starts" id="starts" data-view="mozaik">
+        <div class="tiles ts" id="tiles" aria-hidden="true">
+          <div class="tile live" style="--k:0;--slot:0"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 2C16.993 2 18 3.007 18 4.25v15.5c0 1.243-1.007 2.25-2.25 2.25h-7.5C7.007 22 6 20.993 6 19.75V4.25C6 3.007 7.007 2 8.25 2h7.5zm-2.5 16h-2.5C10.336 18 10 18.336 10 18.75s0.336 0.75 0.75 0.75h2.5c0.414 0 0.75-0.336 0.75-0.75S13.664 18 13.25 18z"/></svg><span class="count">2</span></span><span class="label"><span lang="tr">telefon</span><span lang="en">phone</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 2C16.993 2 18 3.007 18 4.25v15.5c0 1.243-1.007 2.25-2.25 2.25h-7.5C7.007 22 6 20.993 6 19.75V4.25C6 3.007 7.007 2 8.25 2h7.5zm-2.5 16h-2.5C10.336 18 10 18.336 10 18.75s0.336 0.75 0.75 0.75h2.5c0.414 0 0.75-0.336 0.75-0.75S13.664 18 13.25 18z"/></svg><span lang="tr">telefon</span><span lang="en">phone</span></span><span class="msg"><b>Yeliz Bayar</b><span><span lang="tr">cevapsız arama · 2 dk önce</span><span lang="en">missed call · 2 min ago</span></span></span></div></div>
+          <div class="tile wide live" style="--k:1;--slot:1"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10c-1.64 0-3.225-0.396-4.644-1.142l-4.29 1.117c-0.455 0.119-0.92-0.154-1.037-0.608-0.037-0.14-0.037-0.288 0-0.428l1.116-4.289C2.397 15.23 2 13.643 2 12 2 6.477 6.477 2 12 2zm1.252 11H8.75l-0.102 0.007C8.282 13.057 8 13.37 8 13.75s0.282 0.694 0.648 0.743L8.75 14.5h4.502l0.101-0.007c0.367-0.05 0.649-0.363 0.649-0.743s-0.282-0.694-0.649-0.743L13.252 13zm1.998-3.5h-6.5L8.648 9.507C8.282 9.557 8 9.87 8 10.25s0.282 0.694 0.648 0.743L8.75 11h6.5l0.102-0.007C15.718 10.943 16 10.63 16 10.25s-0.282-0.694-0.648-0.743L15.25 9.5z"/></svg><span class="count">13</span></span><span class="label"><span lang="tr">mesajlar</span><span lang="en">messages</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10c-1.64 0-3.225-0.396-4.644-1.142l-4.29 1.117c-0.455 0.119-0.92-0.154-1.037-0.608-0.037-0.14-0.037-0.288 0-0.428l1.116-4.289C2.397 15.23 2 13.643 2 12 2 6.477 6.477 2 12 2zm1.252 11H8.75l-0.102 0.007C8.282 13.057 8 13.37 8 13.75s0.282 0.694 0.648 0.743L8.75 14.5h4.502l0.101-0.007c0.367-0.05 0.649-0.363 0.649-0.743s-0.282-0.694-0.649-0.743L13.252 13zm1.998-3.5h-6.5L8.648 9.507C8.282 9.557 8 9.87 8 10.25s0.282 0.694 0.648 0.743L8.75 11h6.5l0.102-0.007C15.718 10.943 16 10.63 16 10.25s-0.282-0.694-0.648-0.743L15.25 9.5z"/></svg><span lang="tr">mesajlar</span><span lang="en">messages</span></span><span class="msg"><b>Yeliz Bayar</b><span><span lang="tr">Çadırı kim getiriyor?</span><span lang="en">Who's bringing the tent?</span></span></span></div></div>
+          <div class="tile live" style="--k:2;--slot:2"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.75 3C19.545 3 21 4.455 21 6.25V13h-4.75C14.455 13 13 14.455 13 16.25V21H6.25C4.455 21 3 19.545 3 17.75V6.25C3 4.455 4.455 3 6.25 3h11.5zm2.81 11.5l-6.06 6.06v-4.31c0-0.966 0.784-1.75 1.75-1.75h4.31z"/></svg></span><span class="label"><span lang="tr">notlar</span><span lang="en">notes</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.75 3C19.545 3 21 4.455 21 6.25V13h-4.75C14.455 13 13 14.455 13 16.25V21H6.25C4.455 21 3 19.545 3 17.75V6.25C3 4.455 4.455 3 6.25 3h11.5zm2.81 11.5l-6.06 6.06v-4.31c0-0.966 0.784-1.75 1.75-1.75h4.31z"/></svg><span lang="tr">notlar</span><span lang="en">notes</span></span><span class="msg"><b><span lang="tr">kamp malzemeleri</span><span lang="en">camping gear</span></b><span><span lang="tr">çadır, mat, fener…</span><span lang="en">tent, mat, lantern…</span></span></span></div></div>
+          <div class="tile big" style="--k:3"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.558 13.647l-0.083 0.07-6.928 6.802C5.042 20.824 5.626 21 6.25 21h11.5c0.625 0 1.208-0.176 1.703-0.481l-6.928-6.801-0.093-0.078c-0.261-0.185-0.615-0.182-0.874 0.007zM21 6.25C21 4.455 19.545 3 17.75 3H6.25C4.455 3 3 4.455 3 6.25v11.5c0 0.627 0.178 1.213 0.485 1.71l6.939-6.813 0.135-0.122c0.835-0.698 2.056-0.696 2.889 0.006l0.128 0.117 6.939 6.811C20.822 18.963 21 18.377 21 17.75V6.25zm-5.75 4.5c-1.105 0-2-0.895-2-2s0.895-2 2-2 2 0.895 2 2-0.895 2-2 2z"/></svg></span><span class="label"><span lang="tr">fotoğraflar</span><span lang="en">photos</span></span></div></div>
+          <div class="tile live" style="--k:4;--slot:3"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.904 16.5h6.192C14.476 19.773 13.235 22 12 22c-1.197 0-2.4-2.094-3.038-5.204l-0.058-0.294h6.192-6.192zm-5.838 0.001h4.306c0.364 2.082 0.983 3.854 1.792 5.093-2.563-0.757-4.697-2.512-5.952-4.814L3.066 16.5zm13.563 0h4.305c-1.231 2.44-3.432 4.306-6.097 5.093 0.755-1.158 1.344-2.778 1.715-4.681L16.63 16.5h4.305-4.305zM16.93 10h4.87c0.132 0.646 0.2 1.315 0.2 2 0 1.045-0.16 2.053-0.457 3H16.84c0.105-0.958 0.16-1.964 0.16-3 0-0.455-0.01-0.903-0.03-1.344L16.93 10h4.87-4.87zM2.2 10h4.87C7.023 10.65 7 11.318 7 12c0 0.829 0.035 1.639 0.103 2.42L7.159 15H2.456c-0.297-0.947-0.458-1.955-0.458-3 0-0.685 0.07-1.354 0.2-2zm6.377 0h6.849c0.05 0.645 0.077 1.314 0.077 2 0 0.837-0.04 1.65-0.114 2.425L15.327 15H8.674c-0.113-0.946-0.175-1.953-0.175-3 0-0.515 0.015-1.02 0.043-1.512L8.576 10h6.849-6.85zm6.368-7.424l-0.108-0.17c3.019 0.89 5.443 3.167 6.536 6.093h-4.59c-0.316-2.417-0.957-4.492-1.838-5.923l-0.108-0.17 0.108 0.17zM9.042 2.444l0.122-0.037C8.283 3.757 7.628 5.736 7.28 8.06L7.219 8.5h-4.59C3.706 5.613 6.08 3.358 9.041 2.443l0.122-0.037-0.122 0.037zM12 2.002c1.319 0 2.646 2.542 3.214 6.183L15.261 8.5H8.739C9.28 4.691 10.644 2.002 12 2.002z"/></svg></span><span class="label">internet</span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.904 16.5h6.192C14.476 19.773 13.235 22 12 22c-1.197 0-2.4-2.094-3.038-5.204l-0.058-0.294h6.192-6.192zm-5.838 0.001h4.306c0.364 2.082 0.983 3.854 1.792 5.093-2.563-0.757-4.697-2.512-5.952-4.814L3.066 16.5zm13.563 0h4.305c-1.231 2.44-3.432 4.306-6.097 5.093 0.755-1.158 1.344-2.778 1.715-4.681L16.63 16.5h4.305-4.305zM16.93 10h4.87c0.132 0.646 0.2 1.315 0.2 2 0 1.045-0.16 2.053-0.457 3H16.84c0.105-0.958 0.16-1.964 0.16-3 0-0.455-0.01-0.903-0.03-1.344L16.93 10h4.87-4.87zM2.2 10h4.87C7.023 10.65 7 11.318 7 12c0 0.829 0.035 1.639 0.103 2.42L7.159 15H2.456c-0.297-0.947-0.458-1.955-0.458-3 0-0.685 0.07-1.354 0.2-2zm6.377 0h6.849c0.05 0.645 0.077 1.314 0.077 2 0 0.837-0.04 1.65-0.114 2.425L15.327 15H8.674c-0.113-0.946-0.175-1.953-0.175-3 0-0.515 0.015-1.02 0.043-1.512L8.576 10h6.849-6.85zm6.368-7.424l-0.108-0.17c3.019 0.89 5.443 3.167 6.536 6.093h-4.59c-0.316-2.417-0.957-4.492-1.838-5.923l-0.108-0.17 0.108 0.17zM9.042 2.444l0.122-0.037C8.283 3.757 7.628 5.736 7.28 8.06L7.219 8.5h-4.59C3.706 5.613 6.08 3.358 9.041 2.443l0.122-0.037-0.122 0.037zM12 2.002c1.319 0 2.646 2.542 3.214 6.183L15.261 8.5H8.739C9.28 4.691 10.644 2.002 12 2.002z"/></svg>internet</span><span class="msg"><b><span lang="tr">3 sekme</span><span lang="en">3 tabs</span></b><span><span lang="tr">yer imleri, indirmeler</span><span lang="en">bookmarks, downloads</span></span></span></div></div>
+          <div class="tile" style="--k:5"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.925 2.504c0.797 0 1.536 0.422 1.94 1.11l0.814 1.387h2.071C20.545 5 22 6.456 22 8.25v9.5c0 1.795-1.455 3.25-3.25 3.25H5.25C3.455 21 2 19.546 2 17.75v-9.5C2 6.456 3.455 5 5.25 5h2.08l0.875-1.424c0.41-0.667 1.135-1.073 1.917-1.073h3.803zM12 8c-2.485 0-4.5 2.015-4.5 4.5S9.515 17 12 17s4.5-2.015 4.5-4.5S14.485 8 12 8zm0 1.5c1.657 0 3 1.343 3 3s-1.343 3-3 3-3-1.343-3-3 1.343-3 3-3z"/></svg></span><span class="label"><span lang="tr">kamera</span><span lang="en">camera</span></span></div></div>
+          <div class="tile wide live" style="--k:6;--slot:4"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2.75c0-0.237-0.112-0.46-0.302-0.602-0.19-0.141-0.436-0.185-0.663-0.116l-10 3C8.716 5.127 8.5 5.419 8.5 5.75v9.877C7.933 15.232 7.244 15 6.5 15 4.567 15 3 16.567 3 18.5S4.567 22 6.5 22s3.5-1.567 3.5-3.5c0-0.057-0.001-0.114-0.004-0.171C9.999 18.303 10 18.277 10 18.25v-7.942l8.5-2.55v5.87C17.933 13.231 17.244 13 16.5 13c-1.933 0-3.5 1.567-3.5 3.5s1.567 3.5 3.5 3.5 3.5-1.567 3.5-3.5c0-0.057-0.001-0.114-0.004-0.171C19.999 16.303 20 16.277 20 16.25V2.75z"/></svg></span><span class="label"><span lang="tr">müzik</span><span lang="en">music</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2.75c0-0.237-0.112-0.46-0.302-0.602-0.19-0.141-0.436-0.185-0.663-0.116l-10 3C8.716 5.127 8.5 5.419 8.5 5.75v9.877C7.933 15.232 7.244 15 6.5 15 4.567 15 3 16.567 3 18.5S4.567 22 6.5 22s3.5-1.567 3.5-3.5c0-0.057-0.001-0.114-0.004-0.171C9.999 18.303 10 18.277 10 18.25v-7.942l8.5-2.55v5.87C17.933 13.231 17.244 13 16.5 13c-1.933 0-3.5 1.567-3.5 3.5s1.567 3.5 3.5 3.5 3.5-1.567 3.5-3.5c0-0.057-0.001-0.114-0.004-0.171C19.999 16.303 20 16.277 20 16.25V2.75z"/></svg><span lang="tr">müzik</span><span lang="en">music</span></span><span class="msg"><b><span lang="tr">Uçurtma</span><span lang="en">Kite</span></b><span>Ayşe Yıldız · Cam Sokağı</span></span></div></div>
+          <div class="tile live" style="--k:7;--slot:5"><div class="face front"><div class="info"><span class="fig" data-clock>13:10</span><span class="sm" data-date>sal, 29 eyl</span></div><span class="label"><span lang="tr">saat</span><span lang="en">clock</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.25 13.5h-4c-0.414 0-0.75-0.336-0.75-0.75v-6C10.5 6.336 10.836 6 11.25 6S12 6.336 12 6.75V12h3.25c0.414 0 0.75 0.336 0.75 0.75s-0.336 0.75-0.75 0.75zM12 2C6.478 2 2 6.478 2 12s4.478 10 10 10 10-4.478 10-10S17.522 2 12 2z"/></svg><span lang="tr">saat</span><span lang="en">clock</span></span><span class="msg"><b>07:30</b><span><span lang="tr">sonraki alarm · yarın</span><span lang="en">next alarm · tomorrow</span></span></span></div></div>
+          <div class="tile" style="--k:8"><div class="face front"><div class="info cal"><span class="sm" data-wday>salı</span><span class="fig" data-day>29</span><span class="ev"><b><span lang="tr">14:00 Çeyrek sunumu</span><span lang="en">14:00 Quarterly review</span></b></span></div><span class="label"><span lang="tr">takvim</span><span lang="en">calendar</span></span></div></div>
+          <div class="tile live" style="--k:9;--slot:6"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 8.608v8.142c0 1.733-1.357 3.15-3.066 3.245L18.75 20H5.25c-1.733 0-3.15-1.357-3.245-3.066L2 16.75V8.608l9.652 5.056c0.218 0.114 0.478 0.114 0.696 0L22 8.608zM5.25 4h13.5c1.685 0 3.07 1.282 3.234 2.924L12 12.154l-9.984-5.23c0.158-1.581 1.448-2.829 3.048-2.919L5.25 4h13.5-13.5z"/></svg><span class="count">4</span></span><span class="label"><span lang="tr">e-posta</span><span lang="en">email</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 8.608v8.142c0 1.733-1.357 3.15-3.066 3.245L18.75 20H5.25c-1.733 0-3.15-1.357-3.245-3.066L2 16.75V8.608l9.652 5.056c0.218 0.114 0.478 0.114 0.696 0L22 8.608zM5.25 4h13.5c1.685 0 3.07 1.282 3.234 2.924L12 12.154l-9.984-5.23c0.158-1.581 1.448-2.829 3.048-2.919L5.25 4h13.5-13.5z"/></svg><span lang="tr">e-posta</span><span lang="en">email</span></span><span class="msg"><b><span lang="tr">Toplantı notları</span><span lang="en">Meeting notes</span></b><span><span lang="tr">Ekte bulabilirsin…</span><span lang="en">You'll find it attached…</span></span></span></div></div>
+          <div class="tile wide live" style="--k:10;--slot:7"><div class="face front"><div class="info wxi"><div class="now"><span class="fig">13°</span><svg class="wx" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.03 16.03A9 9 0 0 1 8 3.97a9 9 0 1 0 12.03 12.06z"/></svg><span class="sm"><span lang="tr">açık</span><span lang="en">clear</span></span></div><div class="fc"><span>04</span><svg class="wx" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.03 16.03A9 9 0 0 1 8 3.97a9 9 0 1 0 12.03 12.06z"/></svg><span>12°</span></div><div class="fc"><span>05</span><svg class="wx" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.03 16.03A9 9 0 0 1 8 3.97a9 9 0 1 0 12.03 12.06z"/></svg><span>11°</span></div></div><span class="label">Mountain View</span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c0.414 0 0.75 0.336 0.75 0.75v1.5C12.75 4.664 12.414 5 12 5s-0.75-0.336-0.75-0.75v-1.5C11.25 2.336 11.586 2 12 2zm5 10c0 2.761-2.239 5-5 5s-5-2.239-5-5 2.239-5 5-5 5 2.239 5 5zm4.25 0.75c0.414 0 0.75-0.336 0.75-0.75s-0.336-0.75-0.75-0.75h-1.5C19.336 11.25 19 11.586 19 12s0.336 0.75 0.75 0.75h1.5zM12 19c0.414 0 0.75 0.336 0.75 0.75v1.5c0 0.414-0.336 0.75-0.75 0.75s-0.75-0.336-0.75-0.75v-1.5c0-0.414 0.336-0.75 0.75-0.75zm-7.75-6.25C4.664 12.75 5 12.414 5 12s-0.336-0.75-0.75-0.75h-1.5C2.336 11.25 2 11.586 2 12s0.336 0.75 0.75 0.75h1.5zM4.22 4.22c0.293-0.293 0.767-0.293 1.06 0l1.5 1.5c0.293 0.293 0.293 0.768 0 1.06-0.293 0.294-0.767 0.294-1.06 0l-1.5-1.5c-0.293-0.292-0.293-0.767 0-1.06zm1.06 15.56c-0.293 0.294-0.767 0.294-1.06 0-0.293-0.292-0.293-0.767 0-1.06l1.5-1.5c0.293-0.293 0.767-0.293 1.06 0 0.293 0.293 0.293 0.768 0 1.06l-1.5 1.5zm14.5-15.56c-0.293-0.293-0.767-0.293-1.06 0l-1.5 1.5c-0.293 0.293-0.293 0.768 0 1.06 0.293 0.294 0.767 0.294 1.06 0l1.5-1.5c0.293-0.292 0.293-0.767 0-1.06zm-1.06 15.56c0.293 0.294 0.767 0.294 1.06 0 0.293-0.292 0.293-0.767 0-1.06l-1.5-1.5c-0.293-0.293-0.767-0.293-1.06 0-0.293 0.293-0.293 0.768 0 1.06l1.5 1.5z"/></svg><span lang="tr">hava durumu</span><span lang="en">weather</span></span><span class="msg"><b><span lang="tr">yarın 29° / 10°</span><span lang="en">tomorrow 29° / 10°</span></b><span><span lang="tr">güneşli</span><span lang="en">sunny</span></span></span></div></div>
+          <div class="tile live" style="--k:11;--slot:8"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm9 0c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM4.25 14C3.007 14 2 15.007 2 16.25v0.25S2 21 8 21s6-4.5 6-4.5v-0.25c0-1.243-1.007-2.25-2.25-2.25h-7.5zM17 19.5c-1.171 0-2.068-0.181-2.755-0.458 0.342-0.575 0.527-1.128 0.627-1.558 0.06-0.26 0.092-0.481 0.11-0.649 0.008-0.084 0.012-0.155 0.015-0.211L15 16.55v-0.3c0-0.872-0.343-1.664-0.902-2.248L14.2 14h5.6c1.215 0 2.2 0.985 2.2 2.2 0 0 0 3.3-5 3.3z"/></svg></span><span class="label"><span lang="tr">kişiler</span><span lang="en">people</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm9 0c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM4.25 14C3.007 14 2 15.007 2 16.25v0.25S2 21 8 21s6-4.5 6-4.5v-0.25c0-1.243-1.007-2.25-2.25-2.25h-7.5zM17 19.5c-1.171 0-2.068-0.181-2.755-0.458 0.342-0.575 0.527-1.128 0.627-1.558 0.06-0.26 0.092-0.481 0.11-0.649 0.008-0.084 0.012-0.155 0.015-0.211L15 16.55v-0.3c0-0.872-0.343-1.664-0.902-2.248L14.2 14h5.6c1.215 0 2.2 0.985 2.2 2.2 0 0 0 3.3-5 3.3z"/></svg><span lang="tr">kişiler</span><span lang="en">people</span></span><span class="msg"><b>Cem Boyner</b><span><span lang="tr">yeni fotoğraf</span><span lang="en">new photo</span></span></span></div></div>
+          <div class="tile live" style="--k:12;--slot:9"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.25C4 3.455 5.455 2 7.25 2h9.5C18.545 2 20 3.455 20 5.25v13.5c0 1.795-1.455 3.25-3.25 3.25h-9.5C5.455 22 4 20.545 4 18.75V5.25zM9 5C7.895 5 7 5.895 7 7v1c0 1.105 0.895 2 2 2h6c1.105 0 2-0.895 2-2V7c0-1.105-0.895-2-2-2H9zm0.5 8.25C9.5 12.56 8.94 12 8.25 12S7 12.56 7 13.25s0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM8.25 18.5c0.69 0 1.25-0.56 1.25-1.25S8.94 16 8.25 16 7 16.56 7 17.25s0.56 1.25 1.25 1.25zM17 13.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25S17 13.94 17 13.25zm-1.25 5.25c0.69 0 1.25-0.56 1.25-1.25S16.44 16 15.75 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25zm-2.5-5.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM12 18.5c0.69 0 1.25-0.56 1.25-1.25S12.69 16 12 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25z"/></svg></span><span class="label"><span lang="tr">hesap makinesi</span><span lang="en">calculator</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.25C4 3.455 5.455 2 7.25 2h9.5C18.545 2 20 3.455 20 5.25v13.5c0 1.795-1.455 3.25-3.25 3.25h-9.5C5.455 22 4 20.545 4 18.75V5.25zM9 5C7.895 5 7 5.895 7 7v1c0 1.105 0.895 2 2 2h6c1.105 0 2-0.895 2-2V7c0-1.105-0.895-2-2-2H9zm0.5 8.25C9.5 12.56 8.94 12 8.25 12S7 12.56 7 13.25s0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM8.25 18.5c0.69 0 1.25-0.56 1.25-1.25S8.94 16 8.25 16 7 16.56 7 17.25s0.56 1.25 1.25 1.25zM17 13.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25S17 13.94 17 13.25zm-1.25 5.25c0.69 0 1.25-0.56 1.25-1.25S16.44 16 15.75 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25zm-2.5-5.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM12 18.5c0.69 0 1.25-0.56 1.25-1.25S12.69 16 12 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25z"/></svg><span lang="tr">hesap makinesi</span><span lang="en">calculator</span></span><span class="msg"><b>1.284,50</b><span><span lang="tr">son sonuç</span><span lang="en">last result</span></span></span></div></div>
+          <div class="tile live" style="--k:13;--slot:10"><div class="face front"><span class="gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8V6.25C2 4.455 3.455 3 5.25 3h2.879c0.596 0 1.169 0.237 1.59 0.659l1.531 1.53L8.659 7.78C8.519 7.921 8.328 8 8.129 8H2zm0 1.5v8.25C2 19.545 3.455 21 5.25 21h13.5c1.795 0 3.25-1.455 3.25-3.25v-9c0-1.795-1.455-3.25-3.25-3.25h-5.69L9.72 8.841C9.298 9.263 8.725 9.5 8.129 9.5H2z"/></svg></span><span class="label"><span lang="tr">dosyalar</span><span lang="en">files</span></span></div><div class="face bk"><span class="cap"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8V6.25C2 4.455 3.455 3 5.25 3h2.879c0.596 0 1.169 0.237 1.59 0.659l1.531 1.53L8.659 7.78C8.519 7.921 8.328 8 8.129 8H2zm0 1.5v8.25C2 19.545 3.455 21 5.25 21h13.5c1.795 0 3.25-1.455 3.25-3.25v-9c0-1.795-1.455-3.25-3.25-3.25h-5.69L9.72 8.841C9.298 9.263 8.725 9.5 8.129 9.5H2z"/></svg><span lang="tr">dosyalar</span><span lang="en">files</span></span><span class="msg"><b>Download</b><span><span lang="tr">6 öğe · 5,1 / 5,8 GB</span><span lang="en">6 items · 5.1 / 5.8 GB</span></span></span></div></div>
+        </div>
+        <div class="aura" id="aura" aria-hidden="true">
+          <div class="strip" id="qstrip" title="quickplay"><span class="sq qnote" style="--i:2;background:#f2c94c"><i><span lang="tr">kamp</span><span lang="en">camp</span></i></span><span class="sq" style="--i:3;background:linear-gradient(135deg,#f6a945,#d9572b)"></span><span class="sq photo" style="--i:4;background-image:url(../pocketville/img/night.webp)"></span><span style="--i:5" class="sq app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.904 16.5h6.192C14.476 19.773 13.235 22 12 22c-1.197 0-2.4-2.094-3.038-5.204l-0.058-0.294h6.192-6.192zm-5.838 0.001h4.306c0.364 2.082 0.983 3.854 1.792 5.093-2.563-0.757-4.697-2.512-5.952-4.814L3.066 16.5zm13.563 0h4.305c-1.231 2.44-3.432 4.306-6.097 5.093 0.755-1.158 1.344-2.778 1.715-4.681L16.63 16.5h4.305-4.305zM16.93 10h4.87c0.132 0.646 0.2 1.315 0.2 2 0 1.045-0.16 2.053-0.457 3H16.84c0.105-0.958 0.16-1.964 0.16-3 0-0.455-0.01-0.903-0.03-1.344L16.93 10h4.87-4.87zM2.2 10h4.87C7.023 10.65 7 11.318 7 12c0 0.829 0.035 1.639 0.103 2.42L7.159 15H2.456c-0.297-0.947-0.458-1.955-0.458-3 0-0.685 0.07-1.354 0.2-2zm6.377 0h6.849c0.05 0.645 0.077 1.314 0.077 2 0 0.837-0.04 1.65-0.114 2.425L15.327 15H8.674c-0.113-0.946-0.175-1.953-0.175-3 0-0.515 0.015-1.02 0.043-1.512L8.576 10h6.849-6.85zm6.368-7.424l-0.108-0.17c3.019 0.89 5.443 3.167 6.536 6.093h-4.59c-0.316-2.417-0.957-4.492-1.838-5.923l-0.108-0.17 0.108 0.17zM9.042 2.444l0.122-0.037C8.283 3.757 7.628 5.736 7.28 8.06L7.219 8.5h-4.59C3.706 5.613 6.08 3.358 9.041 2.443l0.122-0.037-0.122 0.037zM12 2.002c1.319 0 2.646 2.542 3.214 6.183L15.261 8.5H8.739C9.28 4.691 10.644 2.002 12 2.002z"/></svg></span><span style="--i:6" class="sq app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.925 2.504c0.797 0 1.536 0.422 1.94 1.11l0.814 1.387h2.071C20.545 5 22 6.456 22 8.25v9.5c0 1.795-1.455 3.25-3.25 3.25H5.25C3.455 21 2 19.546 2 17.75v-9.5C2 6.456 3.455 5 5.25 5h2.08l0.875-1.424c0.41-0.667 1.135-1.073 1.917-1.073h3.803zM12 8c-2.485 0-4.5 2.015-4.5 4.5S9.515 17 12 17s4.5-2.015 4.5-4.5S14.485 8 12 8zm0 1.5c1.657 0 3 1.343 3 3s-1.343 3-3 3-3-1.343-3-3 1.343-3 3-3z"/></svg></span><span class="sq" style="--i:7;background:linear-gradient(160deg,#2b6c8f,#123049)"></span><span class="sq photo" style="--i:8;background-image:url(../pocketfarm/img/farm.webp)"></span></div>
+        <div class="qp" id="qp">
+          <div class="qp-in">
+            <div class="qe qtitle" style="--i:1">quickplay</div>
+            <div class="qe" style="--i:2"><h5><span lang="tr">sabitlenenler</span><span lang="en">pins</span></h5><div class="qrow"><span class="pin"><span class="qsq qnote" style="background:#f2c94c"><b><span lang="tr">kamp malzemeleri</span><span lang="en">camping gear</span></b></span><small><span lang="tr">kamp malzemeleri</span><span lang="en">camping gear</span></small></span><span class="pin"><span class="qsq" style="background:linear-gradient(135deg,#f6a945,#d9572b)"><em>Uçurtma</em></span><small>Uçurtma</small></span><span class="pin"><span class="qsq app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.904 16.5h6.192C14.476 19.773 13.235 22 12 22c-1.197 0-2.4-2.094-3.038-5.204l-0.058-0.294h6.192-6.192zm-5.838 0.001h4.306c0.364 2.082 0.983 3.854 1.792 5.093-2.563-0.757-4.697-2.512-5.952-4.814L3.066 16.5zm13.563 0h4.305c-1.231 2.44-3.432 4.306-6.097 5.093 0.755-1.158 1.344-2.778 1.715-4.681L16.63 16.5h4.305-4.305zM16.93 10h4.87c0.132 0.646 0.2 1.315 0.2 2 0 1.045-0.16 2.053-0.457 3H16.84c0.105-0.958 0.16-1.964 0.16-3 0-0.455-0.01-0.903-0.03-1.344L16.93 10h4.87-4.87zM2.2 10h4.87C7.023 10.65 7 11.318 7 12c0 0.829 0.035 1.639 0.103 2.42L7.159 15H2.456c-0.297-0.947-0.458-1.955-0.458-3 0-0.685 0.07-1.354 0.2-2zm6.377 0h6.849c0.05 0.645 0.077 1.314 0.077 2 0 0.837-0.04 1.65-0.114 2.425L15.327 15H8.674c-0.113-0.946-0.175-1.953-0.175-3 0-0.515 0.015-1.02 0.043-1.512L8.576 10h6.849-6.85zm6.368-7.424l-0.108-0.17c3.019 0.89 5.443 3.167 6.536 6.093h-4.59c-0.316-2.417-0.957-4.492-1.838-5.923l-0.108-0.17 0.108 0.17zM9.042 2.444l0.122-0.037C8.283 3.757 7.628 5.736 7.28 8.06L7.219 8.5h-4.59C3.706 5.613 6.08 3.358 9.041 2.443l0.122-0.037-0.122 0.037zM12 2.002c1.319 0 2.646 2.542 3.214 6.183L15.261 8.5H8.739C9.28 4.691 10.644 2.002 12 2.002z"/></svg></span><small>Chrome</small></span></div></div>
+            <div class="qe" style="--i:3"><h5><span lang="tr">son çalınan</span><span lang="en">last played</span></h5><div class="lastp"><span class="qsq big" style="background:linear-gradient(135deg,#f6a945,#d9572b)"><em>Uçurtma</em></span><div><span class="lt">Uçurtma</span><span class="la">Ayşe Yıldız</span><span class="act"><span lang="tr">çal</span><span lang="en">play</span></span></div></div><div class="qrow"><span class="qsq" style="background:linear-gradient(160deg,#2b6c8f,#123049)"><em>Cam Sokağı</em></span><span class="qsq" style="background:linear-gradient(135deg,#1f9e8f,#0b4f5a)"><em>Deniz Feneri</em></span><span class="qsq" style="background:linear-gradient(135deg,#3c3f58,#121420)"><em>Gece Treni</em></span></div></div>
+            <div class="qe" style="--i:4"><h5><span lang="tr">son fotoğraflar</span><span lang="en">recent pictures</span></h5><div class="qrow"><span class="qsq photo" style="background-image:url(../pocketville/img/night.webp)"></span><span class="qsq photo" style="background-image:url(../pocketfarm/img/farm.webp)"></span><span class="qsq photo" style="background-image:url(../pocketville/img/village.webp)"></span><span class="qsq photo" style="background-image:url(../pocketfarm/img/start-night.webp)"></span></div></div>
+            <div class="qe" style="--i:5"><h5><span lang="tr">son notlar</span><span lang="en">recent notes</span></h5><div class="qrow notes"><span class="ncard" style="background:#f2c94c"><b><span lang="tr">kamp malzemeleri</span><span lang="en">camping gear</span></b><span><span lang="tr">çadır, mat, fener, uyku tulumu</span><span lang="en">tent, mat, lantern, sleeping bag</span></span><small><span lang="tr">dün</span><span lang="en">yesterday</span></small></span><span class="ncard" style="background:#6fcf97"><b><span lang="tr">market</span><span lang="en">groceries</span></b><span><span lang="tr">süt, yumurta, ekmek</span><span lang="en">milk, eggs, bread</span></span><small><span lang="tr">pazartesi</span><span lang="en">monday</span></small></span></div></div>
+            <div class="qe" style="--i:6"><h5><span lang="tr">son açılanlar</span><span lang="en">lately opened</span></h5><div class="qrow apps"><span class="qapp"><span class="qsq app small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.904 16.5h6.192C14.476 19.773 13.235 22 12 22c-1.197 0-2.4-2.094-3.038-5.204l-0.058-0.294h6.192-6.192zm-5.838 0.001h4.306c0.364 2.082 0.983 3.854 1.792 5.093-2.563-0.757-4.697-2.512-5.952-4.814L3.066 16.5zm13.563 0h4.305c-1.231 2.44-3.432 4.306-6.097 5.093 0.755-1.158 1.344-2.778 1.715-4.681L16.63 16.5h4.305-4.305zM16.93 10h4.87c0.132 0.646 0.2 1.315 0.2 2 0 1.045-0.16 2.053-0.457 3H16.84c0.105-0.958 0.16-1.964 0.16-3 0-0.455-0.01-0.903-0.03-1.344L16.93 10h4.87-4.87zM2.2 10h4.87C7.023 10.65 7 11.318 7 12c0 0.829 0.035 1.639 0.103 2.42L7.159 15H2.456c-0.297-0.947-0.458-1.955-0.458-3 0-0.685 0.07-1.354 0.2-2zm6.377 0h6.849c0.05 0.645 0.077 1.314 0.077 2 0 0.837-0.04 1.65-0.114 2.425L15.327 15H8.674c-0.113-0.946-0.175-1.953-0.175-3 0-0.515 0.015-1.02 0.043-1.512L8.576 10h6.849-6.85zm6.368-7.424l-0.108-0.17c3.019 0.89 5.443 3.167 6.536 6.093h-4.59c-0.316-2.417-0.957-4.492-1.838-5.923l-0.108-0.17 0.108 0.17zM9.042 2.444l0.122-0.037C8.283 3.757 7.628 5.736 7.28 8.06L7.219 8.5h-4.59C3.706 5.613 6.08 3.358 9.041 2.443l0.122-0.037-0.122 0.037zM12 2.002c1.319 0 2.646 2.542 3.214 6.183L15.261 8.5H8.739C9.28 4.691 10.644 2.002 12 2.002z"/></svg></span><small>Chrome</small></span><span class="qapp"><span class="qsq app small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.925 2.504c0.797 0 1.536 0.422 1.94 1.11l0.814 1.387h2.071C20.545 5 22 6.456 22 8.25v9.5c0 1.795-1.455 3.25-3.25 3.25H5.25C3.455 21 2 19.546 2 17.75v-9.5C2 6.456 3.455 5 5.25 5h2.08l0.875-1.424c0.41-0.667 1.135-1.073 1.917-1.073h3.803zM12 8c-2.485 0-4.5 2.015-4.5 4.5S9.515 17 12 17s4.5-2.015 4.5-4.5S14.485 8 12 8zm0 1.5c1.657 0 3 1.343 3 3s-1.343 3-3 3-3-1.343-3-3 1.343-3 3-3z"/></svg></span><small><span lang="tr">kamera</span><span lang="en">Camera</span></small></span><span class="qapp"><span class="qsq app small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.25C4 3.455 5.455 2 7.25 2h9.5C18.545 2 20 3.455 20 5.25v13.5c0 1.795-1.455 3.25-3.25 3.25h-9.5C5.455 22 4 20.545 4 18.75V5.25zM9 5C7.895 5 7 5.895 7 7v1c0 1.105 0.895 2 2 2h6c1.105 0 2-0.895 2-2V7c0-1.105-0.895-2-2-2H9zm0.5 8.25C9.5 12.56 8.94 12 8.25 12S7 12.56 7 13.25s0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM8.25 18.5c0.69 0 1.25-0.56 1.25-1.25S8.94 16 8.25 16 7 16.56 7 17.25s0.56 1.25 1.25 1.25zM17 13.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25S17 13.94 17 13.25zm-1.25 5.25c0.69 0 1.25-0.56 1.25-1.25S16.44 16 15.75 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25zm-2.5-5.25c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25 1.25-0.56 1.25-1.25zM12 18.5c0.69 0 1.25-0.56 1.25-1.25S12.69 16 12 16s-1.25 0.56-1.25 1.25 0.56 1.25 1.25 1.25z"/></svg></span><small><span lang="tr">hesap mak.</span><span lang="en">Calculator</span></small></span><span class="qapp"><span class="qsq app small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8V6.25C2 4.455 3.455 3 5.25 3h2.879c0.596 0 1.169 0.237 1.59 0.659l1.531 1.53L8.659 7.78C8.519 7.921 8.328 8 8.129 8H2zm0 1.5v8.25C2 19.545 3.455 21 5.25 21h13.5c1.795 0 3.25-1.455 3.25-3.25v-9c0-1.795-1.455-3.25-3.25-3.25h-5.69L9.72 8.841C9.298 9.263 8.725 9.5 8.129 9.5H2z"/></svg></span><small><span lang="tr">dosyalar</span><span lang="en">Files</span></small></span></div></div>
+            <div class="qe" style="--i:7"><h5><span lang="tr">yeni</span><span lang="en">new</span></h5><div class="qrow"><span class="qsq" style="background:linear-gradient(160deg,#c9d6df,#6f8796)"><em>Kış Masalı</em></span><span class="qsq" style="background:linear-gradient(135deg,#e9c46a,#8a6a1f)"><em>Yaz Sonu</em></span></div></div>
+            <p class="qe qhint" style="--i:8"><span lang="tr">sabitlemek için birine basılı tut · uygulama listesi için kaydırmaya devam et</span><span lang="en">hold anything to pin it · keep swiping for the app list</span></p>
+          </div>
+        </div>
+          <div class="zlist" id="zlist">
+            <div class="zi zclock" style="--i:1"><span class="roll" id="zclock">13:10</span></div>
+            <div class="zi zdate" style="--i:2" id="zdate">salı, kasım 17</div>
+            <div class="zi zwx" style="--i:3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.03 16.03A9 9 0 0 1 8 3.97a9 9 0 1 0 12.03 12.06z"/></svg><span>13°</span><small><span lang="tr">açık</span><span lang="en">clear</span></small></div>
+            <ol class="zhubs"><li class="zi zrow news" style="--i:4"><span class="zt"><span lang="tr">telefon</span><span lang="en">phone</span></span><sup class="zc">2</sup><span class="zl" data-lines="[{&quot;tr&quot;: &quot;Yeliz Bayar · cevapsız arama&quot;, &quot;en&quot;: &quot;Yeliz Bayar · missed call&quot;}]"><span class="zli"><span lang="tr">Yeliz Bayar · cevapsız arama</span><span lang="en">Yeliz Bayar · missed call</span></span></span></li><li class="zi zrow news" style="--i:5"><span class="zt"><span lang="tr">mesajlar</span><span lang="en">messages</span></span><sup class="zc">13</sup><span class="zl" data-lines="[{&quot;tr&quot;: &quot;Yeliz Bayar: Çadırı kim getiriyor?&quot;, &quot;en&quot;: &quot;Yeliz Bayar: Who's bringing the tent?&quot;}, {&quot;tr&quot;: &quot;Cem: Yarın 9'da yola çıkıyoruz&quot;, &quot;en&quot;: &quot;Cem: We leave at 9 tomorrow&quot;}]"><span class="zli"><span lang="tr">Yeliz Bayar: Çadırı kim getiriyor?</span><span lang="en">Yeliz Bayar: Who's bringing the tent?</span></span></span></li><li class="zi zrow" style="--i:6"><span class="zt"><span lang="tr">kişiler</span><span lang="en">people</span></span><span class="zl" data-lines="[{&quot;tr&quot;: &quot;Cem Boyner · yeni fotoğraf&quot;, &quot;en&quot;: &quot;Cem Boyner · new photo&quot;}]"><span class="zli"><span lang="tr">Cem Boyner · yeni fotoğraf</span><span lang="en">Cem Boyner · new photo</span></span></span></li><li class="zi zrow" style="--i:7"><span class="zt">internet</span></li><li class="zi zrow" style="--i:8"><span class="zt"><span lang="tr">fotoğraflar</span><span lang="en">photos</span></span><span class="zl" data-lines="[{&quot;tr&quot;: &quot;bugün 12 yeni&quot;, &quot;en&quot;: &quot;12 new today&quot;}]"><span class="zli"><span lang="tr">bugün 12 yeni</span><span lang="en">12 new today</span></span></span></li><li class="zi zrow" style="--i:9"><span class="zt"><span lang="tr">müzik</span><span lang="en">music</span></span><span class="zl" data-lines="[{&quot;tr&quot;: &quot;Uçurtma — Ayşe Yıldız · çalıyor&quot;, &quot;en&quot;: &quot;Kite — Ayşe Yıldız · playing&quot;}, {&quot;tr&quot;: &quot;sıradaki: Cam Sokağı&quot;, &quot;en&quot;: &quot;up next: Cam Sokağı&quot;}]"><span class="zli"><span lang="tr">Uçurtma — Ayşe Yıldız · çalıyor</span><span lang="en">Kite — Ayşe Yıldız · playing</span></span></span></li><li class="zi zrow" style="--i:10"><span class="zt"><span lang="tr">videolar</span><span lang="en">videos</span></span></li><li class="zi zrow" style="--i:11"><span class="zt"><span lang="tr">takvim</span><span lang="en">calendar</span></span><span class="zl" data-lines="[{&quot;tr&quot;: &quot;14:00 Çeyrek sunumu&quot;, &quot;en&quot;: &quot;14:00 Quarterly review&quot;}]"><span class="zli"><span lang="tr">14:00 Çeyrek sunumu</span><span lang="en">14:00 Quarterly review</span></span></span></li><li class="zi zrow news" style="--i:12"><span class="zt"><span lang="tr">e-posta</span><span lang="en">email</span></span><sup class="zc">4</sup><span class="zl" data-lines="[{&quot;tr&quot;: &quot;Toplantı notları&quot;, &quot;en&quot;: &quot;Meeting notes&quot;}]"><span class="zli"><span lang="tr">Toplantı notları</span><span lang="en">Meeting notes</span></span></span></li><li class="zi zrow" style="--i:13"><span class="zt"><span lang="tr">dosyalar</span><span lang="en">files</span></span></li></ol>
+            <div class="zi zend" style="--i:14"><span lang="tr">uygulamalar</span><span lang="en">apps</span><i>·</i><span lang="tr">ayarlar</span><span lang="en">settings</span></div>
+          </div>
+        </div>
+        <div class="paperstart" id="paperstart" aria-hidden="true">
+          <div class="ptiles" id="ptiles"></div>
+          <div class="ppager"><span>‹</span><b>1 / 2</b><span>›</span></div>
+        </div>
+        </div>
+        <div class="layouts" role="tablist" aria-label="Başlangıç düzeni">
+          <button type="button" role="tab" data-view="mozaik" aria-selected="true">mozaik</button>
+          <button type="button" role="tab" data-view="aura" aria-selected="false">aura</button>
+          <button type="button" role="tab" data-view="paper" aria-selected="false">paper</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true"></div>
+</section>
+
+<section class="section devices" style="padding-top:20px">
+  <div class="wrap">
+    <div class="dev-grid">
+      <div class="dev dtv reveal" data-show data-delay="0">
+        <div class="tv-frame"><div class="slides"><figure class="slide on" data-name="konsol"><img src="img/tv-konsol-ana-sayfa.jpg" alt="konsol" loading="lazy"></figure><figure class="slide" data-name="konsol"><img src="img/tv-konsol-uygulamalarim.jpg" alt="konsol" loading="lazy"></figure><figure class="slide" data-name="salon"><img src="img/tv-salon-baslat.jpg" alt="salon" loading="lazy"></figure><figure class="slide" data-name="salon"><img src="img/tv-salon-muzik.jpg" alt="salon" loading="lazy"></figure><figure class="slide" data-name="vitrin"><img src="img/tv-vitrin.jpg" alt="vitrin" loading="lazy"></figure></div></div>
+        <div class="tv-stand"></div>
+        <div class="dev-cap"><span class="dev-kind"><span lang="tr">televizyonda</span><span lang="en">on tv</span></span><span class="caps"><span class="cap on"><b>konsol</b> · <span lang="tr">ana sayfa</span><span lang="en">home</span></span><span class="cap"><b>konsol</b> · <span lang="tr">uygulamalarım</span><span lang="en">my apps</span></span><span class="cap"><b>salon</b> · <span lang="tr">başlat</span><span lang="en">start</span></span><span class="cap"><b>salon</b> · <span lang="tr">müzik</span><span lang="en">music</span></span><span class="cap"><b>vitrin</b> · <span lang="tr">kanallar</span><span lang="en">channels</span></span></span></div>
+        <div class="dots"><button type="button" aria-label="1" class="on"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button><button type="button" aria-label="4"></button><button type="button" aria-label="5"></button></div>
+      </div>
+      <div class="dev dtab reveal" data-show data-delay="2000" style="--d:.15s">
+        <div class="tab-frame"><i class="cam"></i><div class="slides"><figure class="slide on" data-name="panorama"><img src="img/tablet-baslangic.jpg" alt="panorama" loading="lazy"></figure><figure class="slide" data-name="panorama"><img src="img/tablet-uygulamalar.jpg" alt="panorama" loading="lazy"></figure><figure class="slide" data-name="paper"><img src="img/paper-tablet.jpg" alt="paper" loading="lazy"></figure><figure class="slide" data-name="panorama"><img src="img/tablet-eylem-merkezi.jpg" alt="panorama" loading="lazy"></figure></div></div>
+        <div class="dev-cap"><span class="dev-kind"><span lang="tr">tablette</span><span lang="en">on tablet</span></span><span class="caps"><span class="cap on"><b>panorama</b> · <span lang="tr">başlangıç</span><span lang="en">start</span></span><span class="cap"><b>panorama</b> · <span lang="tr">uygulamalar</span><span lang="en">apps</span></span><span class="cap"><b>paper</b> · <span lang="tr">çift sayfa</span><span lang="en">two pages</span></span><span class="cap"><b>panorama</b> · <span lang="tr">eylem merkezi</span><span lang="en">action center</span></span></span></div>
+        <div class="dots"><button type="button" aria-label="1" class="on"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button><button type="button" aria-label="4"></button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:40px">
+  <div class="wrap">
+    <div class="stats reveal">
+      <div class="stat"><b data-count="18">18</b><span lang="tr">hub, hepsi uygulamanın içinde</span><span lang="en">hubs, all inside the app</span></div>
+      <div class="stat"><b data-count="4">4</b><span lang="tr">düzen: Mozaik, Aura, Panorama, Paper</span><span lang="en">layouts: Mozaik, Aura, Panorama, Paper</span></div>
+      <div class="stat"><b data-count="7">7</b><span lang="tr">dil, klavye önerileriyle</span><span lang="en">languages, with keyboard suggestions</span></div>
+      <div class="stat"><b data-count="0">0</b><span lang="tr">veri, telefondan çıkmaz</span><span lang="en">data leaves the phone</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">başlangıç ekranı</span><span lang="en">start screen</span></p>
+      <h2 class="h-l metro split"><span lang="tr">liste değil, bir pano</span><span lang="en">not a list, a board</span></h2>
+      <p class="reveal"><span lang="tr">Karolar sürüklenir, boyutlanır, üst üste bırakılınca klasör olur, kendi kendine döner.</span><span lang="en">Tiles drag, resize, become a folder when dropped on each other, and flip by themselves.</span></p>
+    </div>
+    <div class="kv" data-stagger=".04">
+      <div class="reveal"><b><span lang="tr">dört boyut</span><span lang="en">four sizes</span></b><span lang="tr">küçük, orta, geniş, büyük — sekiz sütunlu bir ızgarada</span><span lang="en">small, medium, wide, large — on an eight-column grid</span></div>
+      <div class="reveal"><b><span lang="tr">canlı karolar</span><span lang="en">live tiles</span></b><span lang="tr">saat, takvim, mesajlar, kişiler, hava durumu, müzik; her boyut için ayrı düzenlenmiş</span><span lang="en">clock, calendar, messages, people, weather, music; laid out for every size</span></div>
+      <div class="reveal"><b><span lang="tr">widget'lar</span><span lang="en">widgets</span></b><span lang="tr">pil, fener, zamanlayıcı, ses modu, arama; dünya saati, geri sayım, yapılacaklar ve adım (Pro)</span><span lang="en">battery, torch, timer, sound mode, search; world clock, countdown, to-dos and steps (Pro)</span></div>
+      <div class="reveal"><b><span lang="tr">buzlu karolar (Pro)</span><span lang="en">frosted tiles (Pro)</span></b><span lang="tr">saydam karoların arkasındaki duvar kağıdı buzlu cam gibi bulanıklaşır</span><span lang="en">the wallpaper behind transparent tiles blurs like frosted glass</span></div>
+      <div class="reveal"><b><span lang="tr">açık olanlar</span><span lang="en">open apps</span></b><span lang="tr">Home'a çift bas: her hub ve uygulama bir kart; yukarı fırlat, kapat</span><span lang="en">double-press Home: every hub and app as a card; flick up to close</span></div>
+      <div class="reveal"><b><span lang="tr">her şey sabitlenir</span><span lang="en">pin anything</span></b><span lang="tr">uygulama, kişi, konuşma, albüm, plak, not, web sayfası</span><span lang="en">apps, people, conversations, albums, records, notes, web pages</span></div>
+      <div class="reveal"><b><span lang="tr">pil tasarrufunu dinler</span><span lang="en">respects battery saver</span></b><span lang="tr">pil tasarrufu açılınca bulanıklık ve animasyonlar kendiliğinden durur</span><span lang="en">blur and animations pause by themselves when battery saver is on</span></div>
+      <div class="reveal"><b><span lang="tr">yedi dil</span><span lang="en">seven languages</span></b><span lang="tr">Türkçe, İngilizce, Fransızca, Almanca, İspanyolca, İtalyanca, Brezilya Portekizcesi</span><span lang="en">Turkish, English, French, German, Spanish, Italian, Brazilian Portuguese</span></div>
+    </div>
+    <div class="shots-row reveal" style="margin-top:40px">
+      <figure><img src="img/baslangic.png" alt="Mozaik panosu" loading="lazy"><figcaption><span lang="tr">Mozaik panosu</span><span lang="en">The Mozaik board</span></figcaption></figure>
+      <figure><img src="img/uygulamalar.png" alt="Uygulamalar" loading="lazy"><figcaption><span lang="tr">uygulamalar: sık kullanılanlar başta, harfler üstte sabit</span><span lang="en">apps: favourites first, letters pinned on top</span></figcaption></figure>
+      <figure><img src="img/acik-olanlar.png" alt="Açık olanlar" loading="lazy"><figcaption><span lang="tr">açık olanlar: Home'a çift bas</span><span lang="en">open apps: double-press Home</span></figcaption></figure>
+      <figure><img src="img/baslangic-acik.png" alt="Açık tema" loading="lazy"><figcaption><span lang="tr">açık tema</span><span lang="en">light theme</span></figcaption></figure>
+      <figure><img src="img/baslangic-lime.png" alt="Lime" loading="lazy"><figcaption>lime</figcaption></figure>
+      <figure><img src="img/baslangic-kobalt.png" alt="Kobalt" loading="lazy"><figcaption><span lang="tr">kobalt</span><span lang="en">cobalt</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">hub'lar</span><span lang="en">hubs</span></p>
+      <h2 class="h-l metro split"><span lang="tr">uygulamalar değil, işler</span><span lang="en">not apps, tasks</span></h2>
+      <p class="reveal"><span lang="tr">Hepsi uygulamanın içinde, hepsi aynı dilde yazılmış.</span><span lang="en">All inside the app, all written in the same language.</span></p>
+    </div>
+    <div class="hubs" data-stagger=".03">
+      <div class="hub reveal"><div class="e">📞</div><span lang="tr">telefon</span><span lang="en">phone</span></div>
+      <div class="hub reveal"><div class="e">💬</div><span lang="tr">mesajlar</span><span lang="en">messages</span></div>
+      <div class="hub reveal"><div class="e">👥</div><span lang="tr">kişiler</span><span lang="en">people</span></div>
+      <div class="hub reveal"><div class="e">🖼️</div><span lang="tr">fotoğraflar</span><span lang="en">photos</span></div>
+      <div class="hub reveal"><div class="e">🎵</div><span lang="tr">müzik + videolar</span><span lang="en">music + videos</span></div>
+      <div class="hub reveal"><div class="e">🌐</div><span>internet</span></div>
+      <div class="hub reveal"><div class="e">✉️</div><span lang="tr">e-posta</span><span lang="en">email</span></div>
+      <div class="hub reveal"><div class="e">📝</div><span lang="tr">notlar</span><span lang="en">notes</span></div>
+      <div class="hub reveal"><div class="e">📚</div><span lang="tr">kitaplar</span><span lang="en">books</span></div>
+      <div class="hub reveal"><div class="e">📁</div><span lang="tr">dosyalar</span><span lang="en">files</span></div>
+      <div class="hub reveal"><div class="e">🗨️</div><span lang="tr">sosyal</span><span lang="en">social</span></div>
+      <div class="hub reveal"><div class="e">⏰</div><span lang="tr">saat</span><span lang="en">clock</span></div>
+      <div class="hub reveal"><div class="e">📅</div><span lang="tr">takvim</span><span lang="en">calendar</span></div>
+      <div class="hub reveal"><div class="e">⛅</div><span lang="tr">hava durumu</span><span lang="en">weather</span></div>
+      <div class="hub reveal"><div class="e">📰</div><span lang="tr">haberler</span><span lang="en">news</span></div>
+      <div class="hub reveal"><div class="e">🧮</div><span lang="tr">hesap makinesi</span><span lang="en">calculator</span></div>
+      <div class="hub reveal"><div class="e">📷</div><span lang="tr">kamera</span><span lang="en">camera</span></div>
+      <div class="hub reveal"><div class="e">⚙️</div><span lang="tr">ayarlar</span><span lang="en">settings</span></div>
+    </div>
+    <div class="shots-row reveal" style="margin-top:40px">
+      <figure><img src="img/fotograflar.png" alt="Fotoğraflar" loading="lazy"><figcaption><span lang="tr">fotoğraflar</span><span lang="en">photos</span></figcaption></figure>
+      <figure><img src="img/muzik.png" alt="Müzik" loading="lazy"><figcaption><span lang="tr">müzik + videolar</span><span lang="en">music + videos</span></figcaption></figure>
+      <figure><img src="img/kisiler.png" alt="Kişiler" loading="lazy"><figcaption><span lang="tr">kişiler</span><span lang="en">people</span></figcaption></figure>
+      <figure><img src="img/dosyalar.png" alt="Dosyalar" loading="lazy"><figcaption><span lang="tr">dosyalar</span><span lang="en">files</span></figcaption></figure>
+      <figure><img src="img/kitap-sesli.png" alt="Kitaplar" loading="lazy"><figcaption><span lang="tr">kitaplar, sesli okuma</span><span lang="en">books, read aloud</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">hareket</span><span lang="en">motion</span></p>
+      <h2 class="h-l metro split"><span lang="tr">yarısı yazı, yarısı hareket</span><span lang="en">half type, half motion</span></h2>
+      <p class="reveal"><span lang="tr">Her geçiş, ekranda bir yerden bir yere giden gerçek bir şeydir. İstersen hareketi azaltma ayarı her şeyi durdurur.</span><span lang="en">Every transition is a real thing moving across the screen. The reduce-motion setting stops all of it if you like.</span></p>
+    </div>
+    <div class="gifs" data-stagger=".1">
+      <figure class="reveal"><img src="img/turnike.gif" alt="Turnike animasyonu" loading="lazy"><figcaption><b lang="tr">turnike.</b><b lang="en">turnstile.</b> <span lang="tr">Karolar dokunduğun karo en son kalacak şekilde savrulur; hub bir menteşeden döner.</span><span lang="en">Tiles swing away with the one you tapped leaving last; the hub turns on a hinge.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/klasor.gif" alt="Zıplama animasyonu" loading="lazy"><figcaption><b lang="tr">zıplama.</b><b lang="en">jump.</b> <span lang="tr">Dokunduğun klasörün adı listeden kalkar, sayfanın başlığı olur.</span><span lang="en">The folder name you tap lifts off the list and becomes the page title.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/eylem-merkezi.gif" alt="Eylem merkezi" loading="lazy"><figcaption><b lang="tr">eylem merkezi.</b><b lang="en">action center.</b> <span lang="tr">Durum çubuğundan aşağı çek: Android'in paneli yerine eylem merkezi iner.</span><span lang="en">Pull down from the status bar: the action center comes down instead of Android's panel.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="paper reveal zoom">
+      <p class="eyebrow">paper · Pro</p>
+      <h2 class="h-l"><span lang="tr">Renkli bir e-kitap okuyucu gibi</span><span lang="en">Like a colour e-reader</span></h2>
+      <p style="max-width:60ch;font-size:18px;margin:18px 0 28px"><span lang="tr">Kâğıt bir sayfa, mürekkep yazı, hiç animasyon yok. Sakin, göz yormayan bir telefon için. Sayfa sayfa ilerler; değişince e-mürekkep gibi kısa bir çakma.</span><span lang="en">A paper page, ink type, no animation at all. For a calm phone that's easy on the eyes. It moves page by page, with a short e-ink style flash on each turn.</span></p>
+      <div class="kv">
+        <div><b><span lang="tr">kâğıt sayfa</span><span lang="en">paper page</span></b><span lang="tr">kâğıt, beyaz, sepya, gri ya da gece</span><span lang="en">paper, white, sepia, grey or night</span></div>
+        <div><b><span lang="tr">mürekkep yazı</span><span lang="en">ink type</span></b><span lang="tr">kitap yazı tipi Literata; dokunduğun şey bir an mürekkebe döner</span><span lang="en">the book typeface Literata; what you touch turns to ink for a moment</span></div>
+        <div><b><span lang="tr">her yerde</span><span lang="en">everywhere</span></b><span lang="tr">hub'lar, diyaloglar, eylem merkezi ve klavye de Paper'a göre giyinir</span><span lang="en">hubs, dialogs, the action center and the keyboard dress for Paper too</span></div>
+        <div><b><span lang="tr">tablette çift sayfa</span><span lang="en">two pages on tablet</span></b><span lang="tr">solda karolar, sağda bugün, son açılanlar ve çalan şarkı</span><span lang="en">tiles on the left; today, recents and what's playing on the right</span></div>
+      </div>
+      <div class="shots-row" style="margin-top:32px">
+        <figure><img src="img/paper.png" alt="Paper başlangıç" loading="lazy"><figcaption><span lang="tr">başlangıç</span><span lang="en">start</span></figcaption></figure>
+        <figure><img src="img/paper-okuyucu.png" alt="Okuyucu" loading="lazy"><figcaption><span lang="tr">okuyucu: sayfa 2 / 4</span><span lang="en">reader: page 2 / 4</span></figcaption></figure>
+        <figure><img src="img/paper-kitaplar.png" alt="Kitaplar" loading="lazy"><figcaption><span lang="tr">kitaplar</span><span lang="en">books</span></figcaption></figure>
+        <figure><img src="img/paper-hava.png" alt="Hava durumu" loading="lazy"><figcaption><span lang="tr">hava durumu, yazıyla</span><span lang="en">weather, in words</span></figcaption></figure>
+        <figure><img src="img/paper-gece.png" alt="Gece" loading="lazy"><figcaption><span lang="tr">gece: siyah sayfa, beyaz mürekkep</span><span lang="en">night: black page, white ink</span></figcaption></figure>
+      </div>
+      <video controls preload="none" playsinline poster="img/paper-video.jpg" style="margin-top:18px"><source src="img/paper.mp4" type="video/mp4"></video>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">tablette</span><span lang="en">on tablets</span></p>
+      <h2 class="h-l metro split"><span lang="tr">yana akan bir pano</span><span lang="en">a board that flows sideways</span></h2>
+      <p class="reveal"><span lang="tr">Geniş ekranda başlangıç Panorama'dır: tam ekran, gruplu karolar. İki parmakla sıkıştır, gruplar küçülür; dört parmakla çek, iki hub yan yana.</span><span lang="en">On a big screen the start is Panorama: full screen, grouped tiles. Pinch and the groups shrink; four-finger swipe for two hubs side by side.</span></p>
+    </div>
+    <div class="shots-row land reveal">
+      <figure><img src="img/tablet.gif" alt="Tablet" loading="lazy"><figcaption><span lang="tr">alttan gelen liste</span><span lang="en">the list slides up</span></figcaption></figure>
+      <figure><img src="img/tablet-baslangic.jpg" alt="Tablet başlangıç" loading="lazy"><figcaption><span lang="tr">başlangıç: gruplar ve hesap karosu</span><span lang="en">start: groups and the account tile</span></figcaption></figure>
+      <figure><img src="img/tablet-uygulamalar.jpg" alt="Tablet uygulamalar" loading="lazy"><figcaption><span lang="tr">uygulamalar: yana kayan sütunlar</span><span lang="en">apps: columns that scroll sideways</span></figcaption></figure>
+      <figure><img src="img/tablet-eylem-merkezi.jpg" alt="Tablet eylem merkezi" loading="lazy"><figcaption><span lang="tr">eylem merkezi sağ kenardan</span><span lang="en">action center from the right edge</span></figcaption></figure>
+      <figure><img src="img/paper-tablet.jpg" alt="Paper tablet" loading="lazy"><figcaption><span lang="tr">paper: çift sayfa</span><span lang="en">paper: two pages</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">televizyonda</span><span lang="en">on TV</span></p>
+      <h2 class="h-l metro split"><span lang="tr">dört tasarım, bir kumanda</span><span lang="en">four designs, one remote</span></h2>
+      <p class="reveal"><span lang="tr">Android TV ve Google TV'de Konsol, Salon, Aura ya da Vitrin. Telefonunda da Zeta varsa 6 haneli bir kodla eşle: gelen aramalar ve mesajlar televizyonun köşesinde.</span><span lang="en">On Android TV and Google TV: Konsol, Salon, Aura or Vitrin. With Zeta on your phone too, pair with a 6-digit code: calls and messages show up in the corner of the TV.</span></p>
+    </div>
+    <div class="tv" data-stagger=".08">
+      <figure class="reveal"><img src="img/tv-konsol-ana-sayfa.jpg" alt="Konsol" loading="lazy" data-zoom><figcaption><b>konsol</b><span lang="tr">gri zemin, üstte bölümler, yeşil karolar</span><span lang="en">grey backdrop, sections on top, green tiles</span></figcaption></figure>
+      <figure class="reveal"><img src="img/tv-salon-baslat.jpg" alt="Salon" loading="lazy" data-zoom><figcaption><b>salon · Pro</b><span lang="tr">solda soluk "başlat", dönen kategoriler</span><span lang="en">a faint "start" on the left, rolling categories</span></figcaption></figure>
+      <figure class="reveal"><img src="img/tv-vitrin.jpg" alt="Vitrin" loading="lazy" data-zoom><figcaption><b>vitrin · Pro</b><span lang="tr">kanallar gibi dizilmiş canlı kareler</span><span lang="en">live tiles lined up like channels</span></figcaption></figure>
+      <figure class="reveal"><img src="img/tv-salon-bildirim.jpg" alt="Telefon bağlantısı" loading="lazy" data-zoom><figcaption><b lang="tr">telefon bağlantısı</b><b lang="en">phone link</b><span lang="tr">köşede mesaj, ev ağının içinden şifreli</span><span lang="en">a message in the corner, encrypted inside your home network</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">kişisel</span><span lang="en">personal</span></p>
+      <h2 class="h-l metro split"><span lang="tr">tek renk yetmez</span><span lang="en">one colour isn't enough</span></h2>
+    </div>
+    <div class="kv" data-stagger=".04">
+      <div class="reveal"><b><span lang="tr">tema ve renk</span><span lang="en">theme and colour</span></b><span lang="tr">koyu, açık ya da sisteme uy; on dört vurgu rengi, özel renk, duvar kağıdından dinamik renk</span><span lang="en">dark, light or follow the system; fourteen accents, a custom colour, dynamic colour from the wallpaper</span></div>
+      <div class="reveal"><b><span lang="tr">karo görünümü</span><span lang="en">tile look</span></b><span lang="tr">saydamlık, buzlu cam, köşeli ya da yuvarlak köşe, karo aralığı, yazı rengi</span><span lang="en">transparency, frosted glass, square or rounded corners, tile spacing, text colour</span></div>
+      <div class="reveal"><b><span lang="tr">karo başına (Pro)</span><span lang="en">per tile (Pro)</span></b><span lang="tr">renk, ad, simge, karoyu dolduran resim, animasyon, bildirimler</span><span lang="en">colour, name, icon, a picture filling the tile, animation, notifications</span></div>
+      <div class="reveal"><b><span lang="tr">varsayılan uygulama</span><span lang="en">default app</span></b><span lang="tr">ana ekran, telefon, SMS, tarayıcı, galeri, müzik ve video oynatıcı olabilir</span><span lang="en">it can be your home screen, phone, SMS, browser, gallery, music and video player</span></div>
+    </div>
+    <div class="shots-row reveal" style="margin-top:36px">
+      <figure><img src="img/gorunum.png" alt="Görünüm" loading="lazy"><figcaption><span lang="tr">görünüm</span><span lang="en">appearance</span></figcaption></figure>
+      <figure><img src="img/baslangic-magenta.png" alt="Magenta" loading="lazy"><figcaption>magenta</figcaption></figure>
+      <figure><img src="img/eylem-merkezi.png" alt="Eylem merkezi" loading="lazy"><figcaption><span lang="tr">eylem merkezi</span><span lang="en">action center</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0" data-release="serkantkn/Zeta">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">indir</span><span lang="en">download</span></p>
+      <h2 class="h-l metro split"><span lang="tr">beta boyunca Pro ücretsiz</span><span lang="en">Pro is free during the beta</span></h2>
+      <p class="reveal"><span lang="tr">Google Play'e çıkınca Pro tek seferlik bir uygulama içi satın alma olacak; beta'daki ayarların olduğu gibi kalır. Ücretsiz sürüm hiçbir veriyi kilitlemez.</span><span lang="en">Once on Google Play, Pro becomes a one-time in-app purchase; your beta settings stay as they are. The free version never locks away your data.</span></p>
+    </div>
+    <div class="dls" data-stagger=".1">
+      <div class="dl reveal"><div class="pf">📱</div><h3><span lang="tr">Telefon ve tablet</span><span lang="en">Phone and tablet</span></h3><p>Android · <span data-version>0.12.1_beta-6.5</span></p>
+        <a class="btn" data-asset=".apk" href="https://github.com/serkantkn/Zeta/releases/download/v0.12.1_beta-6.5/Zeta-0.12.1_beta-6.5.apk"><span lang="tr">APK indir</span><span lang="en">Download APK</span></a></div>
+      <div class="dl reveal"><div class="pf">📺</div><h3><span lang="tr">Televizyon</span><span lang="en">TV</span></h3><p>Android TV · Google TV</p>
+        <a class="btn ghost" data-asset=".apk" href="https://github.com/serkantkn/Zeta/releases/download/v0.12.1_beta-6.5/Zeta-0.12.1_beta-6.5.apk"><span lang="tr">Aynı APK</span><span lang="en">Same APK</span></a></div>
+      <div class="dl reveal"><div class="pf">▶️</div><h3>Google Play</h3><p><span lang="tr">Pro ile birlikte</span><span lang="en">with Pro</span></p><span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+    </div>
+    <div class="note reveal"><p><span lang="tr">Geliştiriciler: başka uygulamalar <a href="developers.html" style="color:var(--c)">ZetaHubKit</a> (Apache 2.0) ile Zeta'ya kendi hub'larını ekleyebilir. Hata ve öneriler için <a href="https://github.com/serkantkn/Zeta/issues" style="color:var(--c)">issue aç</a>.</span><span lang="en">Developers: other apps can add their own hubs to Zeta with <a href="developers.html" style="color:var(--c)">ZetaHubKit</a> (Apache 2.0). Please <a href="https://github.com/serkantkn/Zeta/issues" style="color:var(--c)">open an issue</a> for bugs and ideas.</span></p></div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Sunucu yok. Uygulamada reklam, analiz ve kullanıcı hesabı yok. Kişilerin, mesajların ve fotoğrafların telefonda kalır. Telefondan yalnızca hava durumu, haberler, şarkı sözü ve arama önerisi istekleri çıkar — o özelliği kullandığında ve kimliğin eklenmeden. E-posta şifreleri ve kilitli notlar cihazda şifrelenir.</span><span lang="en">No server. No ads, analytics or user accounts in the app. Your contacts, messages and photos stay on the phone. Only weather, news, lyrics and search-suggestion requests leave it — when you use that feature, and without your identity. Email passwords and locked notes are encrypted on the device.</span></p>
+        <div class="links"><a class="btn ghost" href="privacy.html"><span lang="tr">Gizlilik politikası</span><span lang="en">Privacy policy</span></a><a class="btn ghost" href="developers.html"><span lang="tr">Geliştiriciler</span><span lang="en">Developers</span></a></div>
+      </div>
+    </div>
+    <p class="reveal" style="color:var(--muted);font-size:13px;margin-top:22px"><span lang="tr">Kotlin ve Jetpack Compose. Karo glifleri Microsoft'un Fluent UI System Icons setinden (MIT). Hava durumu Open-Meteo'dan, haberler Google Haberler'den. Zeta kapalı kaynaktır; ücretsiz kullanabilirsin.</span><span lang="en">Kotlin and Jetpack Compose. Tile glyphs from Microsoft's Fluent UI System Icons (MIT). Weather from Open-Meteo, news from Google News. Zeta is closed source; you can use it for free.</span></p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketfarm/index.html" style="--pc:var(--farm)"><img src="../../assets/icons/pocketfarm.png" alt=""><span><b>PocketFarm</b><small lang="tr">Çiftlik oyunu</small><small lang="en">Farming game</small></span></a>
+      <a class="reveal" href="../pocketville/index.html" style="--pc:var(--ville)"><img src="../../assets/icons/pocketville.png" alt=""><span><b>PocketVille</b><small lang="tr">Şehir kurma</small><small lang="en">City builder</small></span></a>
+      <a class="reveal" href="../dicereign/index.html" style="--pc:var(--dice)"><img src="../../assets/icons/dicereign.png" alt=""><span><b>Dice Reign</b><small lang="tr">Zarlı strateji</small><small lang="en">Dice strategy</small></span></a>
+      <a class="reveal" href="../synapse/index.html" style="--pc:var(--syn)"><img src="../../assets/icons/synapse.png" alt=""><span><b>Synapse</b><small lang="tr">Telefon ↔ Mac</small><small lang="en">Phone ↔ Mac</small></span></a>
+    </div>
+  </div>
+</section>
+
+<script src="../../assets/site.js?v=4"></script>
+<script>
+(function () {
+  var REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // accent colours
+  var COLORS = [["mavi", "#2194f0"], ["camgöbeği", "#00bad2"], ["kobalt", "#004fec"], ["yeşil", "#4bad4f"], ["lime", "#cbda38"], ["sarı", "#fce83a"], ["kehribar", "#eda10a"], ["turuncu", "#fc6c00"], ["kırmızı", "#e23834"], ["kızıl", "#da143b"], ["kahverengi", "#81592c"], ["magenta", "#d61b5f"], ["pembe", "#e61e8e"], ["mor", "#9a27ae"]];
+  var sw = document.getElementById("swatches"), KEY = "zeta-accent-v2", cur = "#2194f0";
+  try { cur = localStorage.getItem(KEY) || cur; } catch (e) {}
+  function apply(c) {
+    document.body.style.setProperty("--c", c);
+    sw.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.c === c ? "true" : "false"); });
+    try { localStorage.setItem(KEY, c); } catch (e) {}
+  }
+  COLORS.forEach(function (x) {
+    var b = document.createElement("button"); b.type = "button"; b.title = x[0]; b.setAttribute("aria-label", x[0]);
+    b.dataset.c = x[1]; b.style.setProperty("--s", x[1]);
+    b.addEventListener("click", function () { apply(x[1]); });
+    sw.appendChild(b);
+  });
+  apply(cur);
+
+  // live clock and calendar tiles
+  function liveTiles() {
+    var d = new Date(), tr = document.documentElement.dataset.lang === "tr", L = tr ? "tr-TR" : "en-US";
+    document.querySelectorAll("[data-clock]").forEach(function (e) { e.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); });
+    document.querySelectorAll("[data-date]").forEach(function (e) { e.textContent = (d.toLocaleDateString(L, { weekday: "short" }) + ", " + d.getDate() + " " + d.toLocaleDateString(L, { month: "short" })).toLowerCase().replace(/\./g, ""); });
+    document.querySelectorAll("[data-wday]").forEach(function (e) { e.textContent = d.toLocaleDateString(L, { weekday: "long" }).toLowerCase(); });
+    document.querySelectorAll("[data-day]").forEach(function (e) { e.textContent = d.getDate(); });
+  }
+  liveTiles(); setInterval(liveTiles, 10000); document.addEventListener("langchange", liveTiles);
+
+  // turnstile: tap a tile, tiles swing out (tapped one last), then swing back in
+  var grid = document.getElementById("tiles"), busy = false;
+  setTimeout(function () { grid.classList.remove("ts"); }, 1400);
+  // ---------- Start layouts: mozaik / aura / paper ----------
+  var starts = document.getElementById("starts"), aura = document.getElementById("aura"), ptiles = document.getElementById("ptiles");
+  // Paper's board is Mozaik's, drawn on paper: the fronts only, nothing turning.
+  Array.prototype.forEach.call(grid.children, function (t) {
+    var c = t.cloneNode(true); c.classList.remove("live");
+    c.querySelectorAll(".bk").forEach(function (b) { b.remove(); });
+    ptiles.appendChild(c);
+  });
+  liveTiles();
+  // Aura's clock rolls when the minute turns; its date is "weekday, month day", lower case
+  var zc = document.getElementById("zclock"), zd = document.getElementById("zdate");
+  function auraClock(first) {
+    var d = new Date(), L = document.documentElement.dataset.lang === "tr" ? "tr-TR" : "en-US";
+    var now = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    zd.textContent = (d.toLocaleDateString(L, { weekday: "long" }) + ", " + d.toLocaleDateString(L, { month: "long" }) + " " + d.getDate()).toLowerCase();
+    if (zc.textContent === now) return;
+    if (first || REDUCED) { zc.textContent = now; return; }
+    zc.classList.add("out");
+    setTimeout(function () { zc.classList.remove("out"); zc.textContent = now; zc.classList.add("in"); setTimeout(function () { zc.classList.remove("in"); }, 800); }, 800);
+  }
+  auraClock(true); setInterval(auraClock, 5000); document.addEventListener("langchange", function () { auraClock(true); });
+  function auraEnter() {
+    if (REDUCED) return;
+    aura.classList.remove("enter", "leave"); void aura.offsetWidth; aura.classList.add("enter");
+  }
+  document.querySelectorAll(".layouts button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var v = b.dataset.view; if (starts.dataset.view === v) return;
+      starts.dataset.view = v;
+      document.documentElement.classList.toggle("paper-mode", v === "paper");
+      document.querySelectorAll(".layouts button").forEach(function (o) { o.setAttribute("aria-selected", o === b ? "true" : "false"); });
+      if (v === "aura") { closeQuickplay(true); auraEnter(); }
+      if (v === "mozaik" && !REDUCED) { grid.classList.remove("ts", "out"); void grid.offsetWidth; grid.classList.add("ts"); setTimeout(function () { grid.classList.remove("ts"); }, 1400); }
+    });
+  });
+  // a hub name touched: it zooms through, the others leave to the left, then the list comes back
+  var auraBusy = false;
+  aura.addEventListener("click", function (e) {
+    var row = e.target.closest(".zrow"); if (!row || auraBusy || REDUCED) return;
+    auraBusy = true; row.classList.add("hit");
+    aura.classList.remove("enter"); aura.classList.add("leave");
+    setTimeout(function () { row.classList.remove("hit"); auraEnter(); auraBusy = false; }, 1100);
+  });
+  // quickplay: the strip widens into it and the list steps aside; touching the list brings it back
+  var qstrip = document.getElementById("qstrip"), zlist = document.getElementById("zlist");
+  function closeQuickplay(now) { aura.classList.remove("qopen"); }
+  qstrip.addEventListener("click", function (e) { e.stopPropagation(); if (!auraBusy) aura.classList.add("qopen"); document.getElementById("qp").querySelector(".qp-in").scrollTop = 0; });
+  zlist.addEventListener("click", function (e) { if (aura.classList.contains("qopen")) { e.stopPropagation(); closeQuickplay(); } }, true);
+
+  // tablet and TV: each turns through its layouts like a slideshow; a dot jumps to one
+  document.querySelectorAll("[data-show]").forEach(function (dev) {
+    var sl = dev.querySelectorAll(".slide"), cp = dev.querySelectorAll(".cap"), dt = dev.querySelectorAll(".dots button"), i = 0, timer;
+    function go(n) {
+      if (n === i) return;
+      sl[i].classList.remove("on"); sl[i].classList.add("out");
+      var old = sl[i]; setTimeout(function () { old.style.transition = "none"; old.classList.remove("out"); void old.offsetWidth; old.style.transition = ""; }, 820);
+      cp[i].classList.remove("on"); dt[i].classList.remove("on");
+      i = n; sl[i].classList.add("on"); cp[i].classList.add("on"); dt[i].classList.add("on");
+    }
+    function next() { go((i + 1) % sl.length); }
+    function start() { clearInterval(timer); if (!REDUCED) timer = setInterval(next, 4500); }
+    dt.forEach(function (b, n) { b.addEventListener("click", function () { go(n); start(); }); });
+    setTimeout(start, +dev.dataset.delay || 0);
+  });
+  // live lines turn: the old words slide up and out, the new ones come in from below
+  var lineN = 0;
+  if (!REDUCED) setInterval(function () {
+    if (starts.dataset.view !== "aura") return;
+    var lines = Array.prototype.filter.call(aura.querySelectorAll(".zl"), function (l) { return JSON.parse(l.dataset.lines).length > 1; });
+    if (!lines.length) return;
+    var l = lines[lineN++ % lines.length], data = JSON.parse(l.dataset.lines), i = ((+l.dataset.at || 0) + 1) % data.length;
+    l.dataset.at = i;
+    var old = l.querySelector(".zli"); old.classList.add("up");
+    setTimeout(function () {
+      var n = document.createElement("span"); n.className = "zli in";
+      n.innerHTML = '<span lang="tr">' + data[i].tr + '</span><span lang="en">' + data[i].en + '</span>';
+      old.replaceWith(n);
+    }, 300);
+  }, 3500);
+
+  grid.addEventListener("click", function (e) {
+    var t = e.target.closest(".tile"); if (!t || busy || REDUCED) return;
+    busy = true; t.classList.add("sel");
+    grid.classList.remove("ts"); grid.classList.add("out");
+    setTimeout(function () {
+      grid.classList.remove("out"); t.classList.remove("sel");
+      void grid.offsetWidth; grid.classList.add("ts");
+      setTimeout(function () { busy = false; grid.classList.remove("ts"); }, 1400);
+    }, 1100);
+  });
+})();
+</script>
+</body>
+</html>

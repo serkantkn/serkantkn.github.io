@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="synapse">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Synapse — Serkan Tiken</title>
+<meta name="description" content="Synapse: telefonunla Mac'in arasında şifreli bir köprü. Ekran yansıtma, uzaktan kontrol, bildirimler, pano, dosya ve medya — sunucusuz, kendi ağında.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="Synapse — Telefonunla Mac'in arasında köprü">
+<link rel="icon" href="../../assets/icons/synapse.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=4">
+<style>
+  body { --c: var(--syn); --c2: var(--syn-2); }
+  .phero { background: radial-gradient(100% 80% at 60% 30%, #0d3b46 0%, #071a22 45%, var(--bg) 100%); }
+
+  /* neural network canvas */
+  #net { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; opacity: .7; }
+
+  /* the bridge demo */
+  .bridge { position: relative; display: grid; grid-template-columns: 200px 1fr 1.6fr; align-items: center; gap: 0; }
+  .ph { position: relative; width: 200px; height: 400px; border-radius: 34px; background: #0d0f18; border: 2px solid #3b3f55; padding: 12px; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+  .ph::before { content: ""; position: absolute; top: 10px; left: 50%; width: 60px; height: 16px; margin-left: -30px; border-radius: 10px; background: #000; }
+  .ph .scr { height: 100%; border-radius: 24px; overflow: hidden; position: relative; background: linear-gradient(160deg, #0f766e, #0e7490 60%, #1d4ed8); padding: 40px 12px 12px; }
+  .ph .clock { font: 300 44px/1 var(--display); color: #fff; text-align: center; }
+  .ph .date { color: rgba(255,255,255,.8); text-align: center; font-size: 12px; margin-bottom: 14px; }
+  .note-card { background: rgba(255,255,255,.88); color: #1b1d2b; border-radius: 14px; padding: 9px 10px; font-size: 11px; line-height: 1.35; margin-bottom: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.2); animation: pop .5s var(--spring); }
+  .note-card b { display: block; font-size: 11.5px; }
+  @keyframes pop { from { transform: translateY(-14px) scale(.9); opacity: 0; } }
+  .ph.ring { animation: shake .12s linear infinite; }
+  .ph.ring .scr::after { content: "🔔"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 64px; background: rgba(10,8,30,.55); animation: pop .3s var(--spring); }
+  @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(3deg) translateX(2px); } 75% { transform: rotate(-3deg) translateX(-2px); } }
+
+  .link { position: relative; height: 140px; }
+  .link svg { width: 100%; height: 100%; overflow: visible; }
+  .link path { fill: none; stroke: rgba(255,255,255,.18); stroke-width: 2; stroke-dasharray: 4 8; animation: dash 1.2s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -24; } }
+  .packet { position: absolute; left: 0; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 12px; display: grid; place-items: center; font-size: 20px;
+    background: var(--c); box-shadow: 0 0 30px var(--c); offset-rotate: 0deg; }
+  .lock { position: absolute; left: 50%; top: 50%; translate: -50% -50%; font-size: 12px; padding: 5px 10px; border-radius: 999px; background: rgba(45,212,191,.12); border: 1px solid rgba(45,212,191,.4); color: #c7f5ec; white-space: nowrap; }
+
+  .mac { position: relative; }
+  .mac .lid { border-radius: 16px 16px 4px 4px; background: #0d0f18; border: 2px solid #3b3f55; padding: 10px; aspect-ratio: 16/10.5; }
+  .mac .base { height: 14px; margin: 0 -6%; border-radius: 0 0 14px 14px; background: linear-gradient(#5a5f78, #2e3245); }
+  .mac .desk { position: relative; height: 100%; border-radius: 8px; overflow: hidden; background: radial-gradient(120% 120% at 20% 0%, #2a3c8f, #141a3f 55%, #0b0f22); }
+  .mbar { height: 18px; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 0 10px; font-size: 10px; color: #fff; }
+  .mbar .si { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 4px; background: var(--c); font-size: 9px; }
+  .win { position: absolute; left: 6%; top: 16%; width: 52%; bottom: 10%; border-radius: 10px; background: rgba(20,22,36,.9); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); padding: 10px; display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
+  .win .mini { border-radius: 10px; background: linear-gradient(160deg, #0f766e, #0e7490 60%, #1d4ed8); position: relative; overflow: hidden; }
+  .win .mini::after { content: ""; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.9); left: 40%; top: 60%; box-shadow: 0 0 0 6px rgba(255,255,255,.25); animation: tap 3s ease-in-out infinite; }
+  @keyframes tap { 0%,100% { left: 40%; top: 60%; } 33% { left: 60%; top: 30%; } 66% { left: 25%; top: 40%; } }
+  .win h5 { margin: 0 0 6px; font: 600 11px/1.2 var(--sans); color: #fff; }
+  .np { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 8px; background: rgba(255,255,255,.06); font-size: 10px; color: var(--ink-2); }
+  .np .art { width: 30px; height: 30px; border-radius: 6px; background: linear-gradient(135deg, #ff8a3d, #ffcf4a); flex: none; animation: spin 8s linear infinite; border-radius: 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .eq { display: flex; gap: 2px; align-items: flex-end; height: 14px; margin-left: auto; }
+  .eq i { width: 3px; background: var(--c); animation: eq 1s ease-in-out infinite; }
+  .eq i:nth-child(2) { animation-delay: -.3s; } .eq i:nth-child(3) { animation-delay: -.6s; }
+  @keyframes eq { 0%,100% { height: 3px; } 50% { height: 14px; } }
+  .toasts { position: absolute; right: 3%; top: 14%; width: 38%; display: grid; gap: 6px; }
+  .toast { background: rgba(240,240,248,.92); color: #1b1d2b; border-radius: 10px; padding: 8px 10px; font-size: 10.5px; line-height: 1.3; box-shadow: 0 8px 20px rgba(0,0,0,.3); animation: slidein .5s var(--spring); }
+  .toast b { display: block; }
+  @keyframes slidein { from { transform: translateX(30px); opacity: 0; } }
+  .dropfile { position: absolute; right: 8%; bottom: 14%; font-size: 26px; animation: pop .4s var(--spring); }
+
+  .actions-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 36px; }
+  .actions-row .btn { padding: 12px 18px; font-size: 14px; }
+
+  .sec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .sec { padding: 24px; border-radius: 20px; background: var(--bg-2); border: 1px solid var(--line); }
+  .sec b { display: block; font: 800 26px/1.1 var(--display); color: var(--c); margin-bottom: 6px; }
+  .sec span { color: var(--ink-2); font-size: 14px; }
+
+  .stack-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .plat { padding: 28px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); }
+  .plat h3 { font-size: 22px; margin: 10px 0 8px; }
+  .plat ul { margin: 0 0 18px; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .plat .em { font-size: 32px; }
+
+  @media (max-width: 1020px) {
+    .bridge { grid-template-columns: 1fr; justify-items: center; gap: 10px; }
+    .link { height: 90px; width: 100%; max-width: 360px; transform: rotate(90deg); }
+    .mac { width: 100%; max-width: 560px; }
+    .sec-grid { grid-template-columns: repeat(2, 1fr); }
+    .stack-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<section class="phero" style="min-height:auto;padding-bottom:40px">
+  <canvas id="net" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div style="max-width:820px;margin:0 auto;text-align:center">
+      <div class="app-id reveal" style="justify-content:center"><img src="../../assets/icons/synapse.png" alt="">
+        <span class="chip hot pulse"><span lang="tr">Açık kaynak</span><span lang="en">Open source</span> · Android · Mac · iOS</span></div>
+      <h1 class="h-xl split">Synapse</h1>
+      <p class="lede reveal" style="--d:.4s;margin-inline:auto;font-size:clamp(20px,2.4vw,28px);font-weight:600;color:var(--ink)"><span lang="tr">Telefonunla Mac'in arasında <span class="grad">şifreli bir köprü.</span></span><span lang="en">An <span class="grad">encrypted bridge</span> between your phone and your Mac.</span></p>
+      <p class="lede reveal" style="--d:.5s;margin-inline:auto"><span lang="tr">Ekranı yansıt ve Mac'ten kontrol et, bildirimleri yanıtla, panoyu paylaş, dosya gönder, kaybolan telefonu çaldır. Sunucu yok, bulut yok; her şey kendi ağında.</span><span lang="en">Mirror and control your screen from the Mac, reply to notifications, share the clipboard, send files, ring a lost phone. No server, no cloud; everything stays on your own network.</span></p>
+    </div>
+
+    <div class="bridge reveal zoom" style="--d:.3s;margin-top:56px">
+      <div class="ph" id="phone"><div class="scr"><div class="clock" id="clock">21:25</div><div class="date" id="pdate"></div><div id="phNotes"></div></div></div>
+      <div class="link">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="none"><path id="wire" d="M0 70 C 90 10, 210 130, 300 70"/></svg>
+        <div class="packet" id="packet" style="offset-path: path('M0 70 C 90 10, 210 130, 300 70'); opacity:0">✉️</div>
+        <span class="lock">🔒 RSA + AES-256</span>
+      </div>
+      <div class="mac">
+        <div class="lid"><div class="desk" id="desk">
+          <div class="mbar"><span lang="tr">Synapse · bağlı</span><span lang="en">Synapse · connected</span> <span class="si">⌁</span></div>
+          <div class="win">
+            <div class="mini"></div>
+            <div>
+              <h5 lang="tr">Telefonun · ekran yansıtma</h5><h5 lang="en">Your phone · mirroring</h5>
+              <div class="np"><span class="art"></span><span><b style="color:#fff"><span lang="tr">Şimdi Çalıyor</span><span lang="en">Now Playing</span></b><br><span lang="tr">telefonda</span><span lang="en">on the phone</span></span><span class="eq"><i></i><i></i><i></i></span></div>
+              <div class="np" style="margin-top:6px" id="clip"><span lang="tr">📋 Pano:</span><span lang="en">📋 Clipboard:</span>&nbsp;<span id="clipText">—</span></div>
+            </div>
+          </div>
+          <div class="toasts" id="toasts"></div>
+        </div></div>
+        <div class="base"></div>
+      </div>
+    </div>
+
+    <div class="actions-row reveal" style="--d:.5s">
+      <button class="btn" type="button" data-act="note">💬 <span lang="tr">Bildirim gelsin</span><span lang="en">Send a notification</span></button>
+      <button class="btn ghost" type="button" data-act="clip">📋 <span lang="tr">Panoyu paylaş</span><span lang="en">Share clipboard</span></button>
+      <button class="btn ghost" type="button" data-act="file">📁 <span lang="tr">Dosya gönder</span><span lang="en">Send a file</span></button>
+      <button class="btn ghost" type="button" data-act="ring">🔔 <span lang="tr">Telefonu bul</span><span lang="en">Find my phone</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Neler yapar</span><span lang="en">What it does</span></p>
+      <h2 class="h-l split"><span lang="tr">İki cihaz, tek masa</span><span lang="en">Two devices, one desk</span></h2>
+    </div>
+    <div class="feats" data-stagger=".06">
+      <div class="feat reveal"><div class="ico">🖥️</div><h3><span lang="tr">Ekran yansıtma</span><span lang="en">Screen mirroring</span></h3><p><span lang="tr">GPU hızlandırmalı kodlama ile akıcı, yüksek kare hızlı görüntü; telefonun Mac'te bir pencerede.</span><span lang="en">Smooth, high frame rate video with GPU-accelerated encoding; your phone in a window on the Mac.</span></p></div>
+      <div class="feat reveal"><div class="ico">🖱️</div><h3><span lang="tr">Uzaktan kontrol</span><span lang="en">Remote control</span></h3><p><span lang="tr">Fareyle dokun, kaydır; geri, ana ekran ve son uygulamalar düğmeleri Mac'ten.</span><span lang="en">Tap and scroll with the mouse; back, home and recents buttons from the Mac.</span></p></div>
+      <div class="feat reveal"><div class="ico">💬</div><h3><span lang="tr">Bildirimler ve yanıt</span><span lang="en">Notifications and replies</span></h3><p><span lang="tr">Telefonun bildirimleri macOS bildirim merkezinde, uygulama simgeleriyle. Mesajlara Mac'ten yanıt ver.</span><span lang="en">Your phone's notifications in macOS Notification Center with app icons. Reply to messages from the Mac.</span></p></div>
+      <div class="feat reveal"><div class="ico">📞</div><h3><span lang="tr">Arama ve SMS</span><span lang="en">Calls and SMS</span></h3><p><span lang="tr">Gelen aramalar ve SMS'ler anında Mac ekranında.</span><span lang="en">Incoming calls and SMS show up on the Mac instantly.</span></p></div>
+      <div class="feat reveal"><div class="ico">📋</div><h3><span lang="tr">Ortak pano</span><span lang="en">Shared clipboard</span></h3><p><span lang="tr">Bir yerde kopyala, öbür cihazda yapıştır.</span><span lang="en">Copy on one device, paste on the other.</span></p></div>
+      <div class="feat reveal"><div class="ico">📁</div><h3><span lang="tr">Dosya aktarımı</span><span lang="en">File transfer</span></h3><p><span lang="tr">Finder'dan pencereye sürükle; dosya telefonda İndirilenler/Synapse klasörüne düşer.</span><span lang="en">Drag from Finder onto the window; the file lands in Downloads/Synapse on the phone.</span></p></div>
+      <div class="feat reveal"><div class="ico">🎵</div><h3><span lang="tr">Şimdi Çalıyor</span><span lang="en">Now Playing</span></h3><p><span lang="tr">Telefonda çalan şarkı kapağıyla Mac'te; duraklat, ileri, geri ve ses Mac'ten.</span><span lang="en">What's playing on the phone, with cover art, on the Mac; pause, skip and volume from the Mac.</span></p></div>
+      <div class="feat reveal"><div class="ico">🔔</div><h3><span lang="tr">Telefonu bul</span><span lang="en">Find my phone</span></h3><p><span lang="tr">Mac'teki düğmeyle telefon sesi açılıp çalar ve titrer; iki taraftan da durdurulur.</span><span lang="en">One button on the Mac turns the volume up and makes the phone ring and vibrate; stop it from either side.</span></p></div>
+      <div class="feat reveal"><div class="ico">🔗</div><h3><span lang="tr">Mac'te aç</span><span lang="en">Open on Mac</span></h3><p><span lang="tr">Telefonun paylaş menüsünden bir bağlantıyı doğrudan Mac'te aç. Menü çubuğundan durum ve hızlı işlemler.</span><span lang="en">Open a link on the Mac straight from the phone's share menu. Status and quick actions from the menu bar.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Güvenlik</span><span lang="en">Security</span></p>
+      <h2 class="h-l split"><span lang="tr">Verin evden çıkmaz</span><span lang="en">Your data never leaves home</span></h2>
+      <p class="reveal"><span lang="tr">Synapse merkezi bir sunucu kullanmaz. Trafik yalnızca senin Wi-Fi ağında, senin cihazların arasında akar.</span><span lang="en">Synapse uses no central server. Traffic only flows on your own Wi-Fi, between your own devices.</span></p>
+    </div>
+    <div class="sec-grid" data-stagger=".08">
+      <div class="sec reveal"><b>RSA + AES-256</b><span lang="tr">uçtan uca şifreleme</span><span lang="en">end-to-end encryption</span></div>
+      <div class="sec reveal"><b>QR · PIN</b><span lang="tr">ilk eşleşme; sonra PIN sorulmadan bağlanır</span><span lang="en">first pairing, then reconnects without a PIN</span></div>
+      <div class="sec reveal"><b>Keystore · Keychain</b><span lang="tr">bağlantı anahtarı cihazda şifreli</span><span lang="en">the pairing token is encrypted on the device</span></div>
+      <div class="sec reveal"><b>0</b><span lang="tr">reklam, izleyici ya da bulut yedeği</span><span lang="en">ads, trackers or cloud backups</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Platformlar</span><span lang="en">Platforms</span></p>
+      <h2 class="h-l split"><span lang="tr">Üç uygulama, tek dil</span><span lang="en">Three apps, one language</span></h2>
+    </div>
+    <div class="stack-row" data-stagger=".1">
+      <div class="plat reveal"><div class="em">🤖</div><h3><span lang="tr">Android istemcisi</span><span lang="en">Android client</span></h3>
+        <ul><li>Kotlin · Jetpack Compose</li><li>MediaProjection · ImageReader</li><li>AccessibilityService</li><li><span lang="tr">Android 9 ve üstü</span><span lang="en">Android 9 or later</span></li></ul>
+        <a class="btn" href="https://github.com/serkantkn/Synapse-Android"><span lang="tr">Kaynak kod</span><span lang="en">Source code</span> <span class="arr">↗</span></a></div>
+      <div class="plat reveal"><div class="em">💻</div><h3><span lang="tr">macOS sunucusu</span><span lang="en">macOS server</span></h3>
+        <ul><li>Swift · SwiftUI</li><li>Network.framework · Bonjour</li><li>Combine · Swift Concurrency</li><li><span lang="tr">Menü çubuğu uygulaması</span><span lang="en">Menu bar app</span></li></ul>
+        <a class="btn" href="https://github.com/serkantkn/Synapse-Mac"><span lang="tr">Kaynak kod</span><span lang="en">Source code</span> <span class="arr">↗</span></a></div>
+      <div class="plat reveal"><div class="em">📱</div><h3><span lang="tr">iPhone uygulaması</span><span lang="en">iPhone app</span></h3>
+        <ul><li>Swift · SwiftUI</li><li><span lang="tr">Android telefonla da eşleşir</span><span lang="en">Also pairs with an Android phone</span></li><li><span lang="tr">Anahtar iOS Keychain'de</span><span lang="en">Token in the iOS Keychain</span></li></ul>
+        <span class="btn off"><span lang="tr">Geliştiriliyor</span><span lang="en">In development</span></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Synapse hiçbir kişisel veriyi merkezi bir sunucuya göndermez ya da saklamaz. Hassas izinler (erişilebilirlik, ekran kaydı, bildirim, telefon ve SMS) yalnızca kendi Mac'ine yansıtma ve kontrol için kullanılır.</span><span lang="en">Synapse never sends or stores personal data on a central server. Sensitive permissions (accessibility, screen capture, notifications, phone and SMS) are only used for mirroring and control with your own Mac.</span></p>
+        <div class="links"><a class="btn ghost" href="privacy.html"><span lang="tr">Gizlilik politikası</span><span lang="en">Privacy policy</span></a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketfarm/index.html" style="--pc:var(--farm)"><img src="../../assets/icons/pocketfarm.png" alt=""><span><b>PocketFarm</b><small lang="tr">Çiftlik oyunu</small><small lang="en">Farming game</small></span></a>
+      <a class="reveal" href="../pocketville/index.html" style="--pc:var(--ville)"><img src="../../assets/icons/pocketville.png" alt=""><span><b>PocketVille</b><small lang="tr">Şehir kurma</small><small lang="en">City builder</small></span></a>
+      <a class="reveal" href="../dicereign/index.html" style="--pc:var(--dice)"><img src="../../assets/icons/dicereign.png" alt=""><span><b>Dice Reign</b><small lang="tr">Zarlı strateji</small><small lang="en">Dice strategy</small></span></a>
+      <a class="reveal" href="../zeta/index.html" style="--pc:var(--zeta)"><img src="../../assets/icons/zeta.png" alt=""><span><b>Zeta</b><small lang="tr">Arayüz paketi</small><small lang="en">Interface suite</small></span></a>
+    </div>
+  </div>
+</section>
+
+<script src="../../assets/site.js?v=4"></script>
+<script>
+(function () {
+  var REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* neural net background */
+  var cv = document.getElementById("net"), ctx = cv.getContext("2d"), pts = [], W, H;
+  function size() { var r = cv.getBoundingClientRect(); W = cv.width = r.width * devicePixelRatio; H = cv.height = r.height * devicePixelRatio; }
+  size(); addEventListener("resize", size);
+  for (var i = 0; i < 60; i++) pts.push({ x: Math.random(), y: Math.random(), vx: (Math.random() - .5) * .0006, vy: (Math.random() - .5) * .0006 });
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    var D = 150 * devicePixelRatio;
+    for (var a = 0; a < pts.length; a++) {
+      var p = pts[a];
+      if (!REDUCED) { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > 1) p.vx *= -1; if (p.y < 0 || p.y > 1) p.vy *= -1; }
+      for (var b = a + 1; b < pts.length; b++) {
+        var q = pts[b], dx = (p.x - q.x) * W, dy = (p.y - q.y) * H, d = Math.sqrt(dx * dx + dy * dy);
+        if (d < D) { ctx.strokeStyle = "rgba(45,212,191," + (1 - d / D) * .3 + ")"; ctx.lineWidth = devicePixelRatio; ctx.beginPath(); ctx.moveTo(p.x * W, p.y * H); ctx.lineTo(q.x * W, q.y * H); ctx.stroke(); }
+      }
+      ctx.fillStyle = "rgba(190,240,232,.8)"; ctx.beginPath(); ctx.arc(p.x * W, p.y * H, 2 * devicePixelRatio, 0, 7); ctx.fill();
+    }
+    if (!REDUCED) requestAnimationFrame(draw);
+  }
+  draw();
+
+  /* clock */
+  var ck = document.getElementById("clock");
+  function tick() { var d = new Date(); ck.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    var l = document.documentElement.dataset.lang === "tr" ? "tr-TR" : "en-US", t = d.toLocaleDateString(l, { weekday: "long", day: "numeric", month: "long" });
+    document.getElementById("pdate").textContent = t.charAt(0).toUpperCase() + t.slice(1); }
+  tick(); setInterval(tick, 10000); document.addEventListener("langchange", tick);
+
+  /* demo */
+  var tr = function () { return document.documentElement.dataset.lang === "tr"; };
+  var packet = document.getElementById("packet"), phone = document.getElementById("phone");
+  var toasts = document.getElementById("toasts"), phNotes = document.getElementById("phNotes"), desk = document.getElementById("desk");
+  function send(icon, reverse, done) {
+    packet.textContent = icon;
+    var anim = packet.animate([{ offsetDistance: reverse ? "100%" : "0%", opacity: 0, transform: "scale(.5)" }, { opacity: 1, transform: "scale(1)", offset: .15 }, { opacity: 1, offset: .85 }, { offsetDistance: reverse ? "0%" : "100%", opacity: 0, transform: "scale(.5)" }], { duration: REDUCED ? 10 : 1100, easing: "ease-in-out" });
+    anim.onfinish = done;
+  }
+  function toast(t, b) {
+    var el = document.createElement("div"); el.className = "toast"; el.innerHTML = "<b>" + t + "</b>" + b;
+    toasts.prepend(el); while (toasts.children.length > 3) toasts.lastChild.remove();
+    setTimeout(function () { el.style.transition = "opacity .5s"; el.style.opacity = 0; setTimeout(function () { el.remove(); }, 500); }, 5000);
+  }
+  var msgs = [["Ayşe", "Akşam 8 gibi orada mısın?", "Are you there around 8 tonight?"], ["Kargo", "Paketin yola çıktı 📦", "Your parcel is on its way 📦"], ["Takvim", "15:00 Sunum", "3 PM Presentation"]], mi = 0;
+  var actions = {
+    note: function () {
+      var m = msgs[mi++ % msgs.length], body = tr() ? m[1] : m[2];
+      var n = document.createElement("div"); n.className = "note-card"; n.innerHTML = "<b>" + m[0] + "</b>" + body;
+      phNotes.prepend(n); while (phNotes.children.length > 3) phNotes.lastChild.remove();
+      send("💬", false, function () { toast(m[0], body); });
+    },
+    clip: function () {
+      var t = tr() ? "“Cuma toplantısı 10:30”" : "“Friday meeting 10:30”";
+      send("📋", false, function () { var c = document.getElementById("clipText"); c.textContent = t; c.parentElement.animate([{ background: "rgba(45,212,191,.5)" }, { background: "rgba(255,255,255,.06)" }], 900); });
+    },
+    file: function () {
+      var f = document.createElement("div"); f.className = "dropfile"; f.textContent = "📄"; desk.appendChild(f);
+      setTimeout(function () { f.remove(); send("📄", true, function () {
+        var n = document.createElement("div"); n.className = "note-card"; n.innerHTML = "<b>Synapse</b>" + (tr() ? "rapor.pdf → İndirilenler/Synapse" : "report.pdf → Downloads/Synapse");
+        phNotes.prepend(n); while (phNotes.children.length > 3) phNotes.lastChild.remove();
+      }); }, 500);
+    },
+    ring: function () {
+      send("🔔", true, function () { phone.classList.add("ring"); setTimeout(function () { phone.classList.remove("ring"); }, 2200); });
+    }
+  };
+  document.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { actions[b.dataset.act](); }); });
+  // a first notification so the scene isn't empty
+  setTimeout(actions.note, 1600);
+})();
+</script>
+</body>
+</html>

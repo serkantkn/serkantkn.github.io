@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="pocketfarm">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PocketFarm — Serkan Tiken</title>
+<meta name="description" content="PocketFarm: el yapımı görünümlü, sakin bir çiftlik oyunu. Ek, biç, hayvanlarına bak, fırında ekmek pişir. Android ve Mac için ücretsiz beta.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="PocketFarm — Cebinde küçük bir çiftlik">
+<meta property="og:image" content="../../assets/img/pocketfarm.jpg">
+<link rel="icon" href="../../assets/icons/pocketfarm.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=4">
+<style>
+  body { --c: var(--farm); --c2: var(--farm-2); }
+  /* sky that runs through a day */
+  .sky { position: absolute; inset: 0; z-index: 0; }
+  .sky i { position: absolute; inset: 0; opacity: 0; animation: sky 32s linear infinite; }
+  .sky i:nth-child(1) { background: linear-gradient(180deg, #2c6fb8 0%, #7ec8ff 55%, #cdeccf 100%); animation-delay: 0s; }
+  .sky i:nth-child(2) { background: linear-gradient(180deg, #3a2a6b 0%, #e2706a 55%, #ffc27a 100%); animation-delay: -24s; }
+  .sky i:nth-child(3) { background: linear-gradient(180deg, #05081a 0%, #142a52 60%, #24406b 100%); animation-delay: -16s; }
+  .sky i:nth-child(4) { background: linear-gradient(180deg, #3d4f9a 0%, #f2a0a8 60%, #ffe0a8 100%); animation-delay: -8s; }
+  @keyframes sky { 0% { opacity: 0; } 6% { opacity: 1; } 25% { opacity: 1; } 31% { opacity: 0; } 100% { opacity: 0; } }
+  .sun { position: absolute; z-index: 1; width: 120px; height: 120px; border-radius: 50%; left: 50%; top: 50%; margin: -60px;
+    background: radial-gradient(circle, #fff6c8 0%, #ffd45e 45%, rgba(255,212,94,0) 70%);
+    animation: arc 32s linear infinite; }
+  @keyframes arc { from { transform: rotate(-100deg) translateY(-48vh) rotate(100deg); } to { transform: rotate(260deg) translateY(-48vh) rotate(-260deg); } }
+  .cloud { position: absolute; z-index: 1; opacity: .6; height: 38px; width: 140px; border-radius: 40px; background: rgba(255,255,255,.8); filter: blur(1px); animation: cloud linear infinite; }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+  .cloud::before { width: 64px; height: 64px; left: 22px; top: -30px; }
+  .cloud::after { width: 48px; height: 48px; left: 70px; top: -20px; }
+  @keyframes cloud { from { transform: translateX(-200px); } to { transform: translateX(calc(100vw + 200px)); } }
+  .phero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; z-index: 1; background: linear-gradient(transparent, var(--bg)); }
+  .phero h1 { text-shadow: 0 6px 30px rgba(0,0,0,.35); }
+  .phero .lede { color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
+  .phero .eyebrow { color: #fff; }
+  .phone { max-width: 520px; justify-self: center; }
+
+  /* living farm strip */
+  .meadow { position: relative; height: 260px; overflow: hidden; margin-top: -40px; z-index: 3;
+    background: radial-gradient(140% 90px at 50% 70px, #5f9e3a 98%, transparent 100%) 0 0 / 100% 100% no-repeat, linear-gradient(180deg, transparent 0, transparent 110px, #4f8a30 110px); }
+  .meadow::before { content: ""; position: absolute; inset: 40px 0 0 0; border-radius: 50% 50% 0 0 / 40px 40px 0 0; background: url(img/textures/grass.webp) repeat-x 0 0 / auto 160px; opacity: .55; }
+  .meadow .it { position: absolute; bottom: var(--b, 40px); left: var(--x); transform: scale(calc(var(--s, .62) * 1.3)); transform-origin: 50% 100%; }
+  .spr { width: calc(var(--w) * 1px); height: calc(var(--h) * 1px); background-repeat: no-repeat; background-size: calc(var(--w) * var(--f, 1) * 1px) calc(var(--h) * 1px); }
+  .spr.anim { animation: sprite calc(var(--f) / var(--fps) * 1s) steps(var(--f)) infinite; }
+  @keyframes sprite { to { background-position-x: calc(var(--w) * var(--f) * -1px); } }
+  .walker { position: absolute; bottom: var(--b, 30px); left: 0; animation: walk var(--dur, 30s) linear infinite; animation-delay: var(--delay, 0s); }
+  .walker.rtl { animation-name: walkback; }
+  @keyframes walk { from { transform: translateX(-180px) scale(.8); } to { transform: translateX(calc(100vw + 40px)) scale(.8); } }
+  @keyframes walkback { from { transform: translateX(calc(100vw + 40px)) scale(.8); } to { transform: translateX(-180px) scale(.8); } }
+  .flyer { position: absolute; top: 0; left: 0; animation: fly 18s linear infinite; }
+  @keyframes fly { 0% { transform: translate(-80px, 60px) scale(.7); } 100% { transform: translate(calc(100vw + 80px), -20px) scale(.7); } }
+  .meadow .it.bounce { animation: hop 2.4s var(--ease) infinite; }
+  @keyframes hop { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+
+  /* produce belt */
+  .belt { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .belt-track { display: flex; gap: 22px; width: max-content; animation: marquee 50s linear infinite; }
+  .belt-track img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(0,0,0,.4)); transition: transform .4s var(--spring); }
+  .belt-track img:hover { transform: scale(1.35) rotate(-8deg); }
+
+  /* level road */
+  .road { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: lv; }
+  .lv { position: relative; padding: 22px; border-radius: 20px; background: var(--bg-2); border: 1px solid var(--line); transition: transform .4s var(--spring), border-color .3s; }
+  .lv:hover { transform: translateY(-6px) rotate(-1deg); border-color: var(--c); }
+  .lv .n { font: 800 13px/1 var(--display); color: var(--c); letter-spacing: .1em; }
+  .lv h3 { font-size: 19px; margin: 10px 0 6px; }
+  .lv p { margin: 0; color: var(--muted); font-size: 14px; }
+  .lv img { position: absolute; right: 14px; top: 12px; width: 46px; height: 46px; object-fit: contain; }
+  @media (max-width: 900px) { .road { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .road { grid-template-columns: 1fr; } .meadow { height: 190px; } }
+</style>
+</head>
+<body>
+
+<section class="phero">
+  <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="sun" aria-hidden="true"></div>
+  <div class="cloud" aria-hidden="true" style="top:16%;animation-duration:70s;animation-delay:-20s"></div>
+  <div class="cloud" aria-hidden="true" style="top:30%;animation-duration:95s;animation-delay:-60s;scale:.7"></div>
+  <div class="cloud" aria-hidden="true" style="top:9%;animation-duration:120s;animation-delay:-5s;scale:.5;opacity:.7"></div>
+  <div class="wrap">
+    <div class="phero-grid">
+      <div>
+        <div class="app-id reveal"><img src="../../assets/icons/pocketfarm.png" alt="">
+          <span class="chip hot pulse" style="--c:#fff">Beta · <span lang="tr">Android ve Mac için ücretsiz</span><span lang="en">free for Android and Mac</span></span></div>
+        <h1 class="h-xl split">PocketFarm</h1>
+        <p class="lede reveal" style="--d:.4s;font-size:clamp(22px,2.6vw,30px);font-weight:600"><span lang="tr">Cebinde küçük bir çiftlik.</span><span lang="en">A small farm in your pocket.</span></p>
+        <p class="lede reveal" style="--d:.5s"><span lang="tr">Toprağı sür, tohum ek, hayvanlarına bak, fırında ekmek pişir. Köylüler kapına gelir, akşam olunca fenerler yanar. Acele yok, reklam yok; çiftliğin sen yokken de yavaş yavaş büyür.</span><span lang="en">Till the soil, plant seeds, look after your animals, bake bread. Villagers come to your gate and lamps light up in the evening. No rush and no ads; your farm keeps growing slowly while you are away.</span></p>
+        <div class="btns reveal" style="--d:.65s">
+          <a class="btn" href="#indir" data-magnet><span lang="tr">Ücretsiz indir</span><span lang="en">Download free</span> <span class="arr">↓</span></a>
+          <a class="btn ghost" href="#ozellikler" data-magnet style="color:#fff"><span lang="tr">Neler var?</span><span lang="en">What's inside?</span></a>
+        </div>
+      </div>
+      <div class="phone reveal zoom" style="--d:.3s">
+        <div class="device float" data-tilt="10"><img src="img/orders.webp" alt="PocketFarm sipariş panosu" data-zoom></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="meadow" id="meadow" aria-hidden="true"></div>
+
+<section class="section" style="padding-top:60px">
+  <div class="wrap">
+    <div class="stats reveal">
+      <div class="stat"><b data-count="28">28</b><span lang="tr">seviye</span><span lang="en">levels</span></div>
+      <div class="stat"><b data-count="50" data-suffix="+">50+</b><span lang="tr">ürün ve yemek</span><span lang="en">goods and dishes</span></div>
+      <div class="stat"><b data-count="6">6</b><span lang="tr">dil</span><span lang="en">languages</span></div>
+      <div class="stat"><b data-count="0">0</b><span lang="tr">reklam</span><span lang="en">ads</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ozellikler" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Neler var</span><span lang="en">What's inside</span></p>
+      <h2 class="h-l split"><span lang="tr">Küçük bir çiftlik, kocaman bir dünya</span><span lang="en">A small farm, a whole world</span></h2>
+    </div>
+    <div class="feats" data-stagger=".08">
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/ui_plant.webp" alt=""></div><h3><span lang="tr">Ek, sula, biç</span><span lang="en">Plant, water, harvest</span></h3><p><span lang="tr">Tarlanı sür, tohumu ek. Yağmur susuz ekinleri kendisi sular, fıskiye kurarsan hiç kurumazlar. Biçtiğin toprak yorulur; yeniden sürmek bedava.</span><span lang="en">Till your field and sow. Rain waters thirsty crops by itself, and with a sprinkler they never dry out. Harvested soil gets tired; tilling it again is free.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/ui_heart.webp" alt=""></div><h3><span lang="tr">Hayvanların</span><span lang="en">Your animals</span></h3><p><span lang="tr">Tavuk, inek, koyun, keçi, ördek, domuz ve arılar. Besledikçe ürün verirler; evlerini temiz tutarsan daha mutlu olurlar.</span><span lang="en">Chickens, cows, sheep, goats, ducks, pigs and bees. Feed them and they produce; keep their homes clean and they're happier.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/item_bread.webp" alt=""></div><h3><span lang="tr">Fırından sofraya</span><span lang="en">From oven to table</span></h3><p><span lang="tr">Fırın, mandıra, pastane, mutfak, reçel kazanı… Ham ürünü işle, siparişleri yetiştir. Menemen de var.</span><span lang="en">Bakery, dairy, pastry shop, kitchen, jam kettle… Process raw goods and fill orders. There's even menemen.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/ui_orders.webp" alt=""></div><h3><span lang="tr">Köy hayatı</span><span lang="en">Village life</span></h3><p><span lang="tr">Kapına köylüler gelir, yoldan geçen kamyon yük ister, köy panosunda küçük hikâyeler birikir. Haftada bir panayır, her mevsim bir şenlik.</span><span lang="en">Villagers come to your gate, a passing truck wants cargo, little stories pile up on the village board. A fair every week, a festival every season.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/ui_storm.webp" alt=""></div><h3><span lang="tr">Yaşayan dünya</span><span lang="en">A living world</span></h3><p><span lang="tr">Gün ışığı senin saatini izler: akşam fenerler yanar, gece ateş böcekleri çıkar. Yağmur yağar, fırtına çıkar, kargalar tarlana dadanır.</span><span lang="en">Daylight follows your clock: lamps at dusk, fireflies at night. It rains, storms roll in, and crows go after your field.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/ui_gift.webp" alt=""></div><h3><span lang="tr">Sen yokken de</span><span lang="en">While you're away</span></h3><p><span lang="tr">Oyun kapalıyken zaman işlemeye devam eder. Ürünler hazır olunca haber verir; uzun bir aradan sonra seni bir özet ve küçük bir hediye karşılar.</span><span lang="en">Time keeps running when the game is closed. You're told when goods are ready, and after a long break a summary and a small gift await.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="belt" aria-hidden="true"><div class="belt-track" id="belt"></div></div>
+</section>
+
+<section class="section" id="seviyeler" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Seviyeden seviyeye</span><span lang="en">Level by level</span></p>
+      <h2 class="h-l split"><span lang="tr">Bir avuç buğdaydan reçel kazanına</span><span lang="en">From a handful of wheat to a jam kettle</span></h2>
+      <p class="reveal"><span lang="tr">Her seviye yeni bir şey açar. Çiftliğin de seninle büyür: göletin çevresindeki parselleri alarak arazini genişletirsin.</span><span lang="en">Every level unlocks something new. Your farm grows with you: buy the plots around the pond to expand your land.</span></p>
+    </div>
+    <div class="road" data-stagger=".06">
+      <div class="lv reveal"><img src="img/sprites/item_egg.webp" alt=""><span class="n">1</span><h3><span lang="tr">Buğday ve tavuk</span><span lang="en">Wheat and chickens</span></h3><p><span lang="tr">Her şey bir tarla ve bir kümesle başlar.</span><span lang="en">It all starts with a field and a coop.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_milk.webp" alt=""><span class="n">→</span><h3><span lang="tr">İnek, ahır, fırın</span><span lang="en">Cows, stable, bakery</span></h3><p><span lang="tr">Süt gelir, ekmek fırından çıkar, yem değirmeni döner.</span><span lang="en">Milk arrives, bread comes out of the oven, the feed mill turns.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_cake.webp" alt=""><span class="n">→</span><h3><span lang="tr">Mandıra ve pastane</span><span lang="en">Dairy and pastry shop</span></h3><p><span lang="tr">Peynir, tereyağı, kek ve kurabiye.</span><span lang="en">Cheese, butter, cake and cookies.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_wool.webp" alt=""><span class="n">→</span><h3><span lang="tr">Koyun ve ağıl</span><span lang="en">Sheep and pen</span></h3><p><span lang="tr">Yün, dokuma tezgâhında kazağa dönüşür.</span><span lang="en">Wool becomes a sweater on the loom.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_sunflower_oil.webp" alt=""><span class="n">→</span><h3><span lang="tr">Ayçiçeği ve arılar</span><span lang="en">Sunflowers and bees</span></h3><p><span lang="tr">Yağhane ve kovan; bal sofraya iner.</span><span lang="en">An oil press and a beehive; honey hits the table.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_fish_soup.webp" alt=""><span class="n">→</span><h3><span lang="tr">İskele ve balık</span><span lang="en">Dock and fish</span></h3><p><span lang="tr">Mutfakta balık çorbası, ızgarada balık.</span><span lang="en">Fish soup in the kitchen, grilled fish on the side.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_strawberry_jam.webp" alt=""><span class="n">→</span><h3><span lang="tr">Meyve ve sera</span><span lang="en">Fruit and greenhouse</span></h3><p><span lang="tr">Meyve ağaçları, reçel kazanı, keçi, ördek ve domuz.</span><span lang="en">Fruit trees, a jam kettle, goats, ducks and pigs.</span></p></div>
+      <div class="lv reveal"><img src="img/sprites/item_angora_beret.webp" alt=""><span class="n">28</span><h3><span lang="tr">Bağ, zeytin, angora</span><span lang="en">Vines, olives, angora</span></h3><p><span lang="tr">Bağ ve zeytinlik, en sonunda hindi ve angora tavşanı.</span><span lang="en">Vineyard and olive grove, finally turkeys and angora rabbits.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="gorseller" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Görseller</span><span lang="en">Screenshots</span></p>
+      <h2 class="h-l split"><span lang="tr">Her köşesi elle yapılmış gibi</span><span lang="en">Every corner looks handmade</span></h2>
+      <p class="reveal"><span lang="tr">Binalar, hayvanlar, köylüler ve simgeler Blender'da modellenip aynı ışıkla render edildi. Büyütmek için dokun.</span><span lang="en">Buildings, animals, villagers and icons are modelled in Blender and rendered under the same light. Tap to enlarge.</span></p>
+    </div>
+    <div class="gallery reveal">
+      <figure><img src="img/farm.webp" alt="Bir çiftlik, öğleden sonra" loading="lazy"><figcaption><span lang="tr">Öğleden sonra bir çiftlik</span><span lang="en">A farm in the afternoon</span></figcaption></figure>
+      <figure><img src="img/orders.webp" alt="Sipariş panosu" loading="lazy"><figcaption><span lang="tr">Sipariş panosu</span><span lang="en">Order board</span></figcaption></figure>
+      <figure><img src="img/start-night.webp" alt="İlk açılış, gece" loading="lazy"><figcaption><span lang="tr">İlk açılış, gece</span><span lang="en">First launch, at night</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="indir" style="padding-top:0" data-release="serkantkn/PocketFarm">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">İndir</span><span lang="en">Download</span></p>
+      <h2 class="h-l split"><span lang="tr">Çiftliğin seni bekliyor</span><span lang="en">Your farm is waiting</span></h2>
+      <p class="reveal"><span lang="tr">Son sürüm:</span><span lang="en">Latest version:</span> <b data-version>1.0.0_beta-1</b></p>
+    </div>
+    <div class="dls" data-stagger=".1">
+      <div class="dl reveal"><div class="pf">🤖</div><h3>Android</h3><p><span lang="tr">Telefon ve tablet · Android 9 ve üstü</span><span lang="en">Phones and tablets · Android 9 or later</span></p>
+        <a class="btn" data-asset=".apk" href="https://github.com/serkantkn/PocketFarm/releases/download/v1.0.0_beta-1/PocketFarm-1.0.0_beta-1.apk"><span lang="tr">APK indir</span><span lang="en">Download APK</span> <small class="size">34 MB</small></a></div>
+      <div class="dl reveal"><div class="pf">💻</div><h3>Mac</h3><p><span lang="tr">Apple çipli Mac (M1 ve sonrası)</span><span lang="en">Apple silicon Mac (M1 and later)</span></p>
+        <a class="btn" data-asset="-mac.dmg" href="https://github.com/serkantkn/PocketFarm/releases/download/v1.0.0_beta-1/PocketFarm-1.0.0_beta-1-mac.dmg"><span lang="tr">DMG indir</span><span lang="en">Download DMG</span> <small class="size">109 MB</small></a></div>
+      <div class="dl reveal"><div class="pf">📱</div><h3>iPhone · iPad</h3><p><span lang="tr">Hazır; App Store'a çıkınca burada</span><span lang="en">Ready; here once it's on the App Store</span></p>
+        <span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+    </div>
+    <div class="note reveal"><p><span lang="tr">İstersen Play Oyunlar, Google ya da Apple hesabınla giriş yap: çiftliğin telefon, tablet ve Mac arasında seninle gelir. Giriş yapmadan da her şey oynanır.</span><span lang="en">Sign in with Play Games, Google or Apple if you like and your farm follows you across phone, tablet and Mac. Everything works without an account.</span></p></div>
+    <details class="note reveal">
+      <summary><span lang="tr">Kurulumda takılırsan</span><span lang="en">Trouble installing?</span></summary>
+      <p><span lang="tr"><b>Android:</b> APK'yı indirip aç. Telefon bilinmeyen kaynaklardan yüklemeye izin vermeni isteyebilir; izin verip kurulumu tamamla.</span><span lang="en"><b>Android:</b> download the APK and open it. Your phone may ask you to allow installs from this source; allow it and finish the install.</span></p>
+      <p><span lang="tr"><b>Mac:</b> DMG'yi aç, PocketFarm'ı Uygulamalar klasörüne sürükle. Uygulama henüz Apple onayından geçmediği için ilk açılışta macOS onu durdurur: Sistem Ayarları → Gizlilik ve Güvenlik'te en alttaki “Yine de Aç” düğmesine bas.</span><span lang="en"><b>Mac:</b> open the DMG and drag PocketFarm into Applications. The app isn't notarized by Apple yet, so macOS stops it the first time: open System Settings → Privacy &amp; Security and press “Open Anyway” at the bottom.</span></p>
+      <p><span lang="tr">Bu bir beta: hatalarla karşılaşabilirsin. Bir sorun görürsen <a href="https://github.com/serkantkn/PocketFarm/issues">GitHub'da bir issue aç</a>. <a href="https://github.com/serkantkn/PocketFarm/releases">Bütün sürümler ve sürüm notları →</a></span><span lang="en">This is a beta, so you may run into bugs. Please <a href="https://github.com/serkantkn/PocketFarm/issues">open an issue on GitHub</a>. <a href="https://github.com/serkantkn/PocketFarm/releases">All releases and notes →</a></span></p>
+    </details>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Reklam, analiz ve izleme yok. Giriş yapmazsan çiftliğin yalnızca cihazında durur.</span><span lang="en">No ads, analytics or tracking. If you don't sign in, your farm stays only on your device.</span></p>
+        <p><span lang="tr">Giriş yaparsan çiftlik kaydın, seviyen, altının ve cihazının adı hesabına bağlı olarak Google Firebase'de saklanır. Hesabını ve buluttaki kaydını istediğin an oyunun Ayarlar bölümünden silebilirsin. Oyun, saat ileri alınarak kazanç elde edilmesin diye açılışta internetten saati sorar.</span><span lang="en">If you sign in, your farm save, level, coins and device name are stored in Google Firebase under your account. You can delete your account and cloud save at any time from Settings. At launch the game asks the internet for the time so moving the clock forward doesn't pay off.</span></p>
+        <div class="links"><a class="btn ghost" href="privacy.html"><span lang="tr">Gizlilik politikası</span><span lang="en">Privacy policy</span></a><a class="btn ghost" href="account-deletion.html"><span lang="tr">Hesap silme</span><span lang="en">Account deletion</span></a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketville/index.html" style="--pc:var(--ville)"><img src="../../assets/icons/pocketville.png" alt=""><span><b>PocketVille</b><small lang="tr">Şehir kurma</small><small lang="en">City builder</small></span></a>
+      <a class="reveal" href="../dicereign/index.html" style="--pc:var(--dice)"><img src="../../assets/icons/dicereign.png" alt=""><span><b>Dice Reign</b><small lang="tr">Zarlı strateji</small><small lang="en">Dice strategy</small></span></a>
+      <a class="reveal" href="../synapse/index.html" style="--pc:var(--syn)"><img src="../../assets/icons/synapse.png" alt=""><span><b>Synapse</b><small lang="tr">Telefon ↔ Mac</small><small lang="en">Phone ↔ Mac</small></span></a>
+      <a class="reveal" href="../zeta/index.html" style="--pc:var(--zeta)"><img src="../../assets/icons/zeta.png" alt=""><span><b>Zeta</b><small lang="tr">Arayüz paketi</small><small lang="en">Interface suite</small></span></a>
+    </div>
+  </div>
+</section>
+
+<script src="../../assets/site.js?v=4"></script>
+<script>
+(function () {
+  var S = "img/sprites/";
+  fetch("img/sprites.json").then(function (r) { return r.json(); }).then(function (M) {
+    var meadow = document.getElementById("meadow");
+    function spr(name) {
+      var m = M[name], d = document.createElement("div");
+      d.className = "spr" + (m.frames ? " anim" : "");
+      d.style.cssText = "--w:" + m.w + ";--h:" + m.h + ";--f:" + (m.frames || 1) + ";--fps:" + (m.fps || 1) + ";background-image:url(" + S + name + ".webp)";
+      return d;
+    }
+    function place(name, x, opts) {
+      opts = opts || {};
+      var w = document.createElement("div");
+      w.className = "it" + (opts.bounce ? " bounce" : "");
+      w.style.cssText = "--x:" + x + ";--b:" + (opts.b || 34) + "px;--s:" + (opts.s || .62) + (opts.delay ? ";animation-delay:" + opts.delay : "");
+      w.appendChild(spr(name));
+      meadow.appendChild(w);
+    }
+    // scenery, back to front
+    place("object_tree", "2%", { b: 70, s: .7 });
+    place("object_pine", "20%", { b: 92, s: .7 });
+    place("object_coop", "31%", { b: 80, s: .75 });
+    place("object_tree", "58%", { b: 76, s: .6 });
+    place("object_stable", "70%", { b: 84, s: .72 });
+    place("object_pine", "92%", { b: 92, s: .7 });
+    place("object_beehive", "86%", { b: 64, s: .6 });
+    place("world_lamp", "45%", { b: 66, s: .6 });
+    place("crop_wheat_s3", "12%", { b: 46, s: .7 });
+    place("crop_wheat_s3", "16%", { b: 40, s: .7 });
+    place("crop_sunflower_s3", "52%", { b: 50, s: .7 });
+    place("crop_pumpkin_s3", "64%", { b: 40, s: .7 });
+    place("object_scarecrow", "8%", { b: 52, s: .7 });
+    place("object_well", "39%", { b: 36, s: .7 });
+    // animals
+    place("animal_cow_idle_se", "24%", { b: 22 });
+    place("animal_sheep_eat_se", "60%", { b: 18 });
+    place("animal_dog_happy_se", "80%", { b: 14, bounce: true });
+    place("animal_pig_happy_se", "47%", { b: 6 });
+    place("animal_chicken_eat_se", "34%", { b: 6 });
+    place("animal_goat_eat_sw", "90%", { b: 20 });
+    place("animal_cat_sleep_se", "74%", { b: 52, s: .5 });
+    // walkers and a crow
+    function walker(name, dur, delay, b, rtl) {
+      var w = document.createElement("div");
+      w.className = "walker" + (rtl ? " rtl" : "");
+      w.style.cssText = "--dur:" + dur + "s;--delay:" + delay + "s;--b:" + b + "px";
+      w.appendChild(spr(name)); meadow.appendChild(w);
+    }
+    walker("villager_farmer_walk_sw", 34, -6, 0, true);
+    walker("animal_chicken_walk_se", 26, -14, 2, false);
+    walker("villager_kid_walk_sw", 40, -30, 4, true);
+    var f = document.createElement("div"); f.className = "flyer"; f.appendChild(spr("bird_crow_fly_fly_ne")); meadow.appendChild(f);
+
+    // produce belt
+    var items = Object.keys(M).filter(function (k) { return k.indexOf("item_") === 0; });
+    var belt = document.getElementById("belt");
+    items.concat(items).forEach(function (k) { var i = new Image(); i.src = S + k + ".webp"; i.alt = ""; i.loading = "lazy"; belt.appendChild(i); });
+  });
+})();
+</script>
+</body>
+</html>

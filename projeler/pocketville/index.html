@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="pocketville">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PocketVille — Serkan Tiken</title>
+<meta name="description" content="PocketVille: köyünü metropole büyüt. Yolları döşe, bölgeleri çiz, yerleşimciler şehrini kursun. Android ve Mac için ücretsiz beta.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="PocketVille — Köyünü metropole büyüt">
+<meta property="og:image" content="../../assets/img/pocketville.jpg">
+<link rel="icon" href="../../assets/icons/pocketville.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=4">
+<style>
+  body { --c: var(--ville); --c2: var(--ville-2); }
+  .phero { background: radial-gradient(120% 80% at 70% 20%, #16345e 0%, #0b1426 45%, var(--bg) 100%); }
+  .phero .aurora b { opacity: .35; }
+  .stars { position: absolute; inset: 0; z-index: 0; background-image:
+      radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 60% 12%, #fff, transparent),
+      radial-gradient(1.2px 1.2px at 80% 40%, #fff, transparent), radial-gradient(1px 1px at 35% 70%, #fff, transparent),
+      radial-gradient(1.4px 1.4px at 90% 75%, #fff, transparent), radial-gradient(1px 1px at 10% 85%, #fff, transparent),
+      radial-gradient(1.2px 1.2px at 48% 48%, #fff, transparent);
+    background-size: 340px 340px; opacity: .5; animation: twinkle 4s ease-in-out infinite alternate; }
+  @keyframes twinkle { to { opacity: .15; } }
+
+  /* era switcher */
+  .eras-box { position: relative; }
+  .phero .eras-box .device { width: 100%; }
+  .era-view { position: relative; aspect-ratio: 1080/940; border-radius: 28px; overflow: hidden; }
+  .era-view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1s var(--ease), transform 6s linear; }
+  .era-view img.on { opacity: 1; transform: scale(1); }
+  .era-hud { position: absolute; left: 16px; top: 16px; display: flex; gap: 8px; z-index: 2; }
+  .era-hud span { padding: 7px 12px; border-radius: 999px; background: rgba(5,10,20,.7); backdrop-filter: blur(8px); font-size: 13px; font-weight: 600; }
+  .era-tabs { display: flex; gap: 6px; margin-top: 14px; padding: 6px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid var(--line); width: fit-content; margin-inline: auto; }
+  .era-tabs button { position: relative; border: 0; background: none; color: var(--ink-2); font: 600 14px/1 var(--sans); padding: 10px 16px; border-radius: 999px; cursor: pointer; overflow: hidden; }
+  .era-tabs button.on { background: var(--c); color: #0b0c12; }
+  .era-tabs button.on::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; background: rgba(0,0,0,.35); animation: fillbar 4s linear forwards; }
+  @keyframes fillbar { from { width: 0; } to { width: 100%; } }
+
+  /* skyline that rises */
+  .skyline { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 0; height: 300px; overflow: hidden;
+    border-bottom: 2px solid var(--line-2); }
+  .skyline img { width: auto; margin: 0 -18px; transform: translateY(105%); transition: transform 1.1s var(--spring); transition-delay: var(--d); filter: drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+  .skyline.in img { transform: none; }
+  .skyline img:hover { transform: translateY(-10px) !important; transition-delay: 0s; transition-duration: .4s; }
+
+  .feat .ico { width: 88px; height: 72px; background: none; }
+  .feat .ico img { width: 88px; height: 72px; }
+  .feat .ico img + img { margin-left: -50px; }
+
+  .era-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .era-card { position: relative; padding: 24px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; transition: transform .45s var(--spring), border-color .3s; }
+  .era-card:hover { transform: translateY(-8px); border-color: var(--c); }
+  .era-card img { height: 110px; width: auto; margin: -6px auto 16px; transition: transform .6s var(--spring); }
+  .era-card:hover img { transform: scale(1.1) translateY(-6px); }
+  .era-card .k { font: 700 12px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--c); }
+  .era-card h3 { font-size: 24px; margin: 8px 0 4px; }
+  .era-card small { color: var(--ink-2); font-weight: 600; }
+  .era-card p { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+  .era-card::after { content: ""; position: absolute; left: 24px; right: 24px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, var(--c), var(--c2)); transform: scaleX(0); transform-origin: 0; transition: transform .6s var(--ease); }
+  .era-card:hover::after { transform: scaleX(1); }
+  @media (max-width: 900px) { .era-cards { grid-template-columns: repeat(2, 1fr); } .skyline { height: 200px; } .skyline img { max-height: 180px; } }
+  @media (max-width: 520px) { .era-cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<section class="phero">
+  <div class="stars" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true" style="--a1:var(--ville);--a2:var(--ville-2);--a3:#2a3cff;--a4:#ffcf4a"><b></b><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <div class="phero-grid">
+      <div>
+        <div class="app-id reveal"><img src="../../assets/icons/pocketville.png" alt="">
+          <span class="chip hot pulse">Beta · <span lang="tr">Android ve Mac için ücretsiz</span><span lang="en">free for Android and Mac</span></span></div>
+        <h1 class="h-xl split">PocketVille</h1>
+        <p class="lede reveal" style="--d:.4s;font-size:clamp(22px,2.6vw,30px);font-weight:600;color:var(--ink)"><span lang="tr">Köyünü <span class="grad">metropole</span> büyüt.</span><span lang="en">Grow a village into a <span class="grad">metropolis</span>.</span></p>
+        <p class="lede reveal" style="--d:.5s"><span lang="tr">Yolları döşe, bölgeleri çiz; yerleşimciler evlerini, dükkânlarını ve fabrikalarını kendileri kursun. Suyu akıt, trafiği yürüt; küçük adan pazar meydanından gökdelenlere uzansın. Reklam yok, acele yok.</span><span lang="en">Lay the roads, paint the zones, and settlers build their own homes, shops and factories. Keep the water running and the traffic moving, and your little island grows from a market square into a skyline. No ads, no rush.</span></p>
+        <div class="btns reveal" style="--d:.65s">
+          <a class="btn" href="#indir" data-magnet><span lang="tr">Ücretsiz indir</span><span lang="en">Download free</span> <span class="arr">↓</span></a>
+          <a class="btn ghost" href="#ozellikler" data-magnet><span lang="tr">Neler var?</span><span lang="en">What's inside?</span></a>
+        </div>
+      </div>
+      <div class="eras-box reveal zoom" style="--d:.3s">
+        <div class="device" data-tilt="8">
+          <div class="era-view" id="eraView">
+            <img class="on" src="img/eras/village.webp" alt="Köy">
+            <img src="img/eras/modern.webp" alt="Modern">
+            <img src="img/eras/metro.webp" alt="Metropol">
+            <img src="img/eras/night.webp" alt="Gece">
+            <div class="era-hud"><span><span lang="tr">Gün</span><span lang="en">Day</span> <b id="day">63</b></span><span><b id="pop">2.150</b> <span lang="tr">kişi</span><span lang="en">people</span></span></div>
+          </div>
+        </div>
+        <div class="era-tabs" id="eraTabs">
+          <button class="on" type="button"><span lang="tr">Köy</span><span lang="en">Village</span></button>
+          <button type="button">Modern</button>
+          <button type="button"><span lang="tr">Metropol</span><span lang="en">Metropolis</span></button>
+          <button type="button"><span lang="tr">Gece</span><span lang="en">Night</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true"></div>
+</section>
+
+<section class="section" style="padding-top:40px">
+  <div class="wrap">
+    <div class="stats reveal">
+      <div class="stat"><b data-count="4">4</b><span lang="tr">çağ, köyden metropole</span><span lang="en">eras, village to metropolis</span></div>
+      <div class="stat"><b data-count="140" data-suffix="+">140+</b><span lang="tr">bina tasarımı</span><span lang="en">building designs</span></div>
+      <div class="stat"><b data-count="6">6</b><span lang="tr">dil</span><span lang="en">languages</span></div>
+      <div class="stat"><b data-count="0">0</b><span lang="tr">reklam</span><span lang="en">ads</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ozellikler" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Neler var</span><span lang="en">What's inside</span></p>
+      <h2 class="h-l split"><span lang="tr">Şehri sen planlarsın. Halk kurar.</span><span lang="en">You plan the city. The people build it.</span></h2>
+    </div>
+    <div class="feats" data-stagger=".08">
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/house_m_1.webp" alt=""><img src="img/sprites/g_2_c_1_3_0.webp" alt=""></div><h3><span lang="tr">Sen çiz, onlar kursun</span><span lang="en">Zone it, they build it</span></h3><p><span lang="tr">Yolların yanına konut, ticaret ve sanayi bölgeleri boya. Talep varsa yerleşimciler gelir ve inşa eder. Üç talep çubuğu şehrin ne istediğini söyler.</span><span lang="en">Paint residential, commercial and industrial zones next to your roads. If there's demand, settlers move in and build. Three demand bars tell you what the city wants.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/house_n_0.webp" alt=""><img src="img/sprites/g_3_r_2_3_1.webp" alt=""></div><h3><span lang="tr">Dört çağ</span><span lang="en">Four eras</span></h3><p><span lang="tr">Ahşap evler ve bir kuyuyla başla; sanayi çağından modern şehre, oradan metropole büyü. Elektrik ulaşan mahalleler yeni tarzda yenilenir.</span><span lang="en">Start with timber houses and a well, then grow through the industrial age and the modern city into the metropolis. Neighbourhoods rebuild in the new style once power arrives.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/c_water_pump.webp" alt=""><img src="img/sprites/c_fire_station.webp" alt=""></div><h3><span lang="tr">Şebekeler ve hizmetler</span><span lang="en">Utilities and services</span></h3><p><span lang="tr">Su ve elektrik yollar boyunca akar. Polis, itfaiye, sağlık, okul, park ve çöp; her birinin bir kapsama alanı ve bütçesi var.</span><span lang="en">Water and power flow along your roads. Police, fire, clinics, schools, parks and waste each cover an area and have a budget.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/c_tram_stop.webp" alt=""><img src="img/sprites/c_metro_station.webp" alt=""></div><h3><span lang="tr">Gerçek trafik</span><span lang="en">Real traffic</span></h3><p><span lang="tr">Her yolculuk gerçek bir rota izler, dolan yol tıkanır. Cadde, bulvar, tek yönlü ve ağaçlı yollar; tramvay, otobüs ve metro.</span><span lang="en">Every trip takes a real route and roads jam when full. Avenues, boulevards, one-way and tree-lined roads; trams, buses and the metro.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/market.webp" alt=""><img src="img/sprites/c_stadium.webp" alt=""></div><h3><span lang="tr">Yaşayan şehir</span><span lang="en">A city with a life</span></h3><p><span lang="tr">Akşam pencereler yanar, sokaklar dolar, fabrikalar tüter. Yangınlar, şenlikler, turistler ve ticaret heyetleri; danışmanların neyin yanlış gittiğini söyler.</span><span lang="en">Windows light up at dusk, streets fill, factories smoke. Fires, festivals, tourists and trade missions; your advisors tell you what's wrong.</span></p></div>
+      <div class="feat reveal"><div class="ico"><img src="img/sprites/c_sky_tower.webp" alt=""><img src="img/sprites/c_central_park.webp" alt=""></div><h3><span lang="tr">Sen yokken de</span><span lang="en">While you're away</span></h3><p><span lang="tr">Bir oyun günü yaklaşık bir gerçek dakika; uygulama kapalıyken şehir 12 saate kadar yaşamaya devam eder. İstersen giriş yap, şehrin cihazların arasında seninle gelsin.</span><span lang="en">A game day is about a real minute, and the city keeps living for up to 12 hours while the app is closed. Sign in if you like and your city follows you.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head center">
+      <p class="eyebrow reveal"><span lang="tr">Çağdan çağa</span><span lang="en">Era by era</span></p>
+      <h2 class="h-l split"><span lang="tr">Pazar meydanından gökdelenlere</span><span lang="en">From a market square to a skyline</span></h2>
+    </div>
+    <div class="skyline reveal" id="skyline" aria-hidden="true">
+      <img src="img/sprites/well.webp" style="--d:.0s;height:70px" alt="">
+      <img src="img/sprites/house_n_0.webp" style="--d:.08s;height:110px" alt="">
+      <img src="img/sprites/chapel.webp" style="--d:.16s;height:150px" alt="">
+      <img src="img/sprites/tavern.webp" style="--d:.24s;height:120px" alt="">
+      <img src="img/sprites/c_train_station.webp" style="--d:.32s;height:140px" alt="">
+      <img src="img/sprites/g_2_r_2_3_0.webp" style="--d:.4s;height:170px" alt="">
+      <img src="img/sprites/c_hospital.webp" style="--d:.48s;height:170px" alt="">
+      <img src="img/sprites/c_university.webp" style="--d:.56s;height:180px" alt="">
+      <img src="img/sprites/g_3_c_2_3_0.webp" style="--d:.64s;height:230px" alt="">
+      <img src="img/sprites/c_sky_tower.webp" style="--d:.72s;height:290px" alt="">
+      <img src="img/sprites/c_future_spire.webp" style="--d:.8s;height:270px" alt="">
+      <img src="img/sprites/c_wind_turbine.webp" style="--d:.88s;height:170px" alt="">
+    </div>
+    <div class="era-cards" style="margin-top:48px" data-stagger=".1">
+      <div class="era-card reveal"><img src="img/sprites/castle.webp" alt=""><span class="k">01</span><h3><span lang="tr">Köy</span><span lang="en">Village</span></h3><small><span lang="tr">Başladığın yer</span><span lang="en">Where you start</span></small><p><span lang="tr">Patikalar, kuyular, bir pazar, bir şapel ve bir gözetleme kulesi. Bahçeli evler ve küçük atölyeler.</span><span lang="en">Paths, wells, a market, a chapel and a watch post. Houses with gardens and little workshops.</span></p></div>
+      <div class="era-card reveal"><img src="img/sprites/hall_1.webp" alt=""><span class="k">02</span><h3><span lang="tr">Sanayi</span><span lang="en">Industrial</span></h3><small><span lang="tr">800 kişi</span><span lang="en">800 people</span></small><p><span lang="tr">Santraller, su pompaları, kamyon sahalı fabrikalar, okullar, tren istasyonu ve tramvay.</span><span lang="en">Power plants, water pumps, factories with truck yards, schools, the train station and trams.</span></p></div>
+      <div class="era-card reveal"><img src="img/sprites/hall_2.webp" alt=""><span class="k">03</span><h3>Modern</h3><small><span lang="tr">4.000 kişi ve bir üniversite</span><span lang="en">4,000 people and a university</span></small><p><span lang="tr">Yüksek yoğunluk, hastane, polis ve itfaiye, otobüs, bulvar, otoyol ve havalimanı.</span><span lang="en">High density, hospitals, police and fire, buses, boulevards, highways and an airport.</span></p></div>
+      <div class="era-card reveal"><img src="img/sprites/hall_3.webp" alt=""><span class="k">04</span><h3><span lang="tr">Metropol</span><span lang="en">Metropolis</span></h3><small><span lang="tr">20.000 kişi ve bir simge kule</span><span lang="en">20,000 people and a landmark</span></small><p><span lang="tr">Cam kuleler, metro, rüzgâr ve güneş enerjisi, geri dönüşüm ve turist çeken simge yapılar.</span><span lang="en">Glass towers, the metro, wind and solar, recycling, and landmarks that bring in tourists.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="gorseller" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Görseller</span><span lang="en">Screenshots</span></p>
+      <h2 class="h-l split"><span lang="tr">Her bina Blender'dan çıktı</span><span lang="en">Every building comes out of Blender</span></h2>
+      <p class="reveal"><span lang="tr">Evler, kuleler, istasyonlar ve yol parçaları aynı ışıkla render edildi. Kaydır, büyütmek için dokun.</span><span lang="en">Houses, towers, stations and road pieces are rendered under the same light. Swipe, tap to enlarge.</span></p>
+    </div>
+    <div class="gallery reveal">
+      <figure><img src="img/village.webp" alt="Köy" loading="lazy"><figcaption><span lang="tr">Köy</span><span lang="en">The village</span></figcaption></figure>
+      <figure><img src="img/modern.webp" alt="Modern şehir" loading="lazy"><figcaption><span lang="tr">Modern şehir</span><span lang="en">The modern city</span></figcaption></figure>
+      <figure><img src="img/close.webp" alt="Şehir merkezi" loading="lazy"><figcaption><span lang="tr">Şehir merkezi, yakından</span><span lang="en">Downtown, up close</span></figcaption></figure>
+      <figure><img src="img/night.webp" alt="Gece" loading="lazy"><figcaption><span lang="tr">Gece çöker</span><span lang="en">Night falls</span></figcaption></figure>
+      <figure><img src="img/traffic.webp" alt="Trafik katmanı" loading="lazy"><figcaption><span lang="tr">Trafik katmanı</span><span lang="en">Traffic layer</span></figcaption></figure>
+      <figure><img src="img/advisors.webp" alt="Danışmanlar" loading="lazy"><figcaption><span lang="tr">Danışmanların</span><span lang="en">Your advisors</span></figcaption></figure>
+      <figure><img src="img/metro.webp" alt="Metropol" loading="lazy"><figcaption><span lang="tr">Metropol</span><span lang="en">Metropolis</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="indir" style="padding-top:0" data-release="serkantkn/PocketVille">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">İndir</span><span lang="en">Download</span></p>
+      <h2 class="h-l split"><span lang="tr">Adan seni bekliyor</span><span lang="en">Your island is waiting</span></h2>
+      <p class="reveal"><span lang="tr">Son sürüm:</span><span lang="en">Latest version:</span> <b data-version>1.0.0_beta-1</b></p>
+    </div>
+    <div class="dls" data-stagger=".1">
+      <div class="dl reveal"><div class="pf">🤖</div><h3>Android</h3><p><span lang="tr">Telefon ve tablet · Android 9 ve üstü</span><span lang="en">Phones and tablets · Android 9 or later</span></p>
+        <a class="btn" data-asset=".apk" href="https://github.com/serkantkn/PocketVille/releases/download/v1.0.0_beta-1/PocketVille-1.0.0_beta-1.apk"><span lang="tr">APK indir</span><span lang="en">Download APK</span> <small class="size">54 MB</small></a></div>
+      <div class="dl reveal"><div class="pf">💻</div><h3>Mac</h3><p><span lang="tr">Apple çipli Mac (M1 ve sonrası)</span><span lang="en">Apple silicon Mac (M1 and later)</span></p>
+        <a class="btn" data-asset="-mac.dmg" href="https://github.com/serkantkn/PocketVille/releases/download/v1.0.0_beta-1/PocketVille-1.0.0_beta-1-mac.dmg"><span lang="tr">DMG indir</span><span lang="en">Download DMG</span> <small class="size">87 MB</small></a></div>
+      <div class="dl reveal"><div class="pf">📱</div><h3>iPhone · iPad</h3><p><span lang="tr">Hazır; App Store'dan gelecek</span><span lang="en">Ready; coming through the App Store</span></p>
+        <span class="btn off"><span lang="tr">Yakında</span><span lang="en">Coming soon</span></span></div>
+    </div>
+    <div class="note reveal"><p><span lang="tr">Bulut kaydı isteğe bağlı: Android'de Google, iPhone'da Apple ya da Google ile giriş yap, şehrin cihazların arasında taşınsın. Hesapsız da her şey çalışır. Mac sürümü şehrini şimdilik Mac'te tutar.</span><span lang="en">Cloud save is optional: sign in with Google on Android, or Apple or Google on iPhone, and your city moves between devices. Everything works without an account. The Mac version keeps its city on the Mac for now.</span></p></div>
+    <details class="note reveal">
+      <summary><span lang="tr">Kurulumda takılırsan</span><span lang="en">Trouble installing?</span></summary>
+      <p><span lang="tr"><b>Android:</b> APK'yı indirip aç. Telefon bu kaynaktan yüklemeye izin vermeni isteyebilir; izin verip kurulumu tamamla.</span><span lang="en"><b>Android:</b> download the APK and open it. Your phone may ask you to allow installs from this source; allow it and finish the install.</span></p>
+      <p><span lang="tr"><b>Mac:</b> DMG'yi aç, PocketVille'i Uygulamalar'a sürükle. Uygulama henüz Apple onayından geçmediği için ilk açılışta macOS durdurur: Sistem Ayarları → Gizlilik ve Güvenlik'te en alttaki “Yine de Aç”a bas.</span><span lang="en"><b>Mac:</b> open the DMG and drag PocketVille into Applications. It isn't notarized yet, so macOS stops it the first time: open System Settings → Privacy &amp; Security and press “Open Anyway”.</span></p>
+      <p><span lang="tr">Bu bir beta. Bir sorun görürsen <a href="https://github.com/serkantkn/PocketVille/issues">GitHub'da bir issue aç</a>. <a href="https://github.com/serkantkn/PocketVille/releases">Bütün sürümler →</a></span><span lang="en">This is a beta. Please <a href="https://github.com/serkantkn/PocketVille/issues">open an issue on GitHub</a>. <a href="https://github.com/serkantkn/PocketVille/releases">All releases →</a></span></p>
+    </details>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Reklam, analiz ve izleme yok. Giriş yapmazsan şehrin cihazında kalır.</span><span lang="en">No ads, analytics or tracking. If you don't sign in, your city stays on your device.</span></p>
+        <p><span lang="tr">Giriş yaparsan şehir kaydın ve onu kaydeden cihazın adı hesabına bağlı olarak Google Firebase'de saklanır; ikisini de Ayarlar'dan istediğin an silebilirsin. Oyun açılışta internetten saati sorar; saati ileri almak işe yaramaz.</span><span lang="en">If you sign in, your city save and the name of the device that saved it are stored in Google Firebase under your account; delete both from Settings at any time. At launch the game asks the internet for the time, so moving the clock forward doesn't pay off.</span></p>
+        <div class="links"><a class="btn ghost" href="privacy.html"><span lang="tr">Gizlilik politikası</span><span lang="en">Privacy policy</span></a><a class="btn ghost" href="account-deletion.html"><span lang="tr">Hesap silme</span><span lang="en">Account deletion</span></a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketfarm/index.html" style="--pc:var(--farm)"><img src="../../assets/icons/pocketfarm.png" alt=""><span><b>PocketFarm</b><small lang="tr">Çiftlik oyunu</small><small lang="en">Farming game</small></span></a>
+      <a class="reveal" href="../dicereign/index.html" style="--pc:var(--dice)"><img src="../../assets/icons/dicereign.png" alt=""><span><b>Dice Reign</b><small lang="tr">Zarlı strateji</small><small lang="en">Dice strategy</small></span></a>
+      <a class="reveal" href="../synapse/index.html" style="--pc:var(--syn)"><img src="../../assets/icons/synapse.png" alt=""><span><b>Synapse</b><small lang="tr">Telefon ↔ Mac</small><small lang="en">Phone ↔ Mac</small></span></a>
+      <a class="reveal" href="../zeta/index.html" style="--pc:var(--zeta)"><img src="../../assets/icons/zeta.png" alt=""><span><b>Zeta</b><small lang="tr">Arayüz paketi</small><small lang="en">Interface suite</small></span></a>
+    </div>
+  </div>
+</section>
+
+<script src="../../assets/site.js?v=4"></script>
+<script>
+(function () {
+  var imgs = document.querySelectorAll("#eraView img"), tabs = document.querySelectorAll("#eraTabs button");
+  var day = document.getElementById("day"), pop = document.getElementById("pop");
+  var stats = [[63, 2150], [302, 14823], [488, 25525], [488, 25525]];
+  var cur = 0, timer;
+  function fmt(n) { return document.documentElement.dataset.lang === "tr" ? n.toLocaleString("tr-TR") : n.toLocaleString("en-US"); }
+  function count(el, from, to) {
+    var t0 = performance.now();
+    (function s(t) { var k = Math.min(1, (t - t0) / 900); el.textContent = fmt(Math.round(from + (to - from) * k)); if (k < 1) requestAnimationFrame(s); })(t0);
+  }
+  function show(i) {
+    var prev = stats[cur];
+    imgs[cur].classList.remove("on"); tabs[cur].classList.remove("on");
+    cur = i;
+    imgs[cur].classList.add("on");
+    tabs[cur].classList.remove("on"); void tabs[cur].offsetWidth; tabs[cur].classList.add("on");
+    count(day, prev[0], stats[i][0]); count(pop, prev[1], stats[i][1]);
+    clearTimeout(timer); timer = setTimeout(function () { show((cur + 1) % imgs.length); }, 4000);
+  }
+  tabs.forEach(function (b, i) { b.addEventListener("click", function () { show(i); }); });
+  pop.textContent = fmt(2150);
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) timer = setTimeout(function () { show(1); }, 4000);
+  document.addEventListener("langchange", function () { pop.textContent = fmt(stats[cur][1]); });
+})();
+</script>
+</body>
+</html>
