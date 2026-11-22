@@ -26,7 +26,8 @@
     { id: "pocketville", name: "PocketVille", color: "var(--ville)", tr: "Şehir kurma oyunu", en: "City builder" },
     { id: "dicereign", name: "Dice Reign", color: "var(--dice)", tr: "Zarlı strateji", en: "Dice strategy" },
     { id: "synapse", name: "Synapse", color: "var(--syn)", tr: "Telefon ↔ Mac", en: "Phone ↔ Mac" },
-    { id: "zeta", name: "Zeta", color: "var(--zeta)", tr: "Arayüz paketi", en: "Interface suite" }
+    { id: "zeta", name: "Zeta", color: "var(--zeta)", tr: "Arayüz paketi", en: "Interface suite" },
+    { id: "runehold", name: "Runehold", color: "var(--rune)", tr: "Aksiyon RPG", en: "Action RPG" }
   ];
   window.ST_PROJECTS = PROJECTS;
 

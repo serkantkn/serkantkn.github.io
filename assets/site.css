@@ -18,6 +18,8 @@
   --dice-2: #ff7a59;
   --syn: #2dd4bf;
   --syn-2: #38bdf8;
+  --rune: #ff8a3d;
+  --rune-2: #f2c35b;
   --zeta: #2194f0;
   --zeta-2: #00bad2;
   --c: #38bdf8;
@@ -328,7 +330,7 @@ details.note[open] summary { margin-bottom: 12px; }
 @keyframes float { 50% { transform: translateY(-14px); } }
 
 /* project pager at the bottom of project pages */
-.pager { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.pager { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 .pager a {
   --c: var(--pc); display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 18px; text-decoration: none;
   background: var(--bg-2); border: 1px solid var(--line); transition: transform .4s var(--spring), border-color .3s;

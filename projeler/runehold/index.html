@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="runehold">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Runehold — Serkan Tiken</title>
+<meta name="description" content="Runehold: Android için izometrik fantastik aksiyon RPG ve hafif RTS. Tapınakları uyandır, köy kur, ordunu ateş ve buza karşı savaşa götür. Godot 4 ile yapıldı. Kapalı beta yakında.">
+<meta name="theme-color" content="#0d0b0a">
+<meta property="og:title" content="Runehold — Tapınakları uyandır, ordunu kur">
+<meta property="og:image" content="../../assets/img/runehold.jpg">
+<link rel="icon" href="../../assets/icons/runehold.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=5">
+<style>
+  body { --c: var(--rune); --c2: var(--rune-2); --ember: #ff8a3d; --frost: #6fd3ff; --gold: #f2c35b; }
+  .phero { background: radial-gradient(80% 70% at 75% 45%, #3a1a0c 0%, #1a0f0a 45%, var(--bg) 100%); }
+  #embers { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
+  .title-rh { font-family: "Cinzel Decorative", "Cinzel", serif; font-weight: 900; letter-spacing: .01em;
+    background: linear-gradient(180deg, #ffe7a8 0%, var(--gold) 45%, #c9721f 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 0 #4a2208) drop-shadow(0 18px 40px rgba(255,120,40,.35)); }
+  .title-rh .ch { background: inherit; -webkit-background-clip: text; background-clip: text; }
+  .cinzel { font-family: "Cinzel", serif; letter-spacing: .02em; }
+
+  /* sprite strips (filled in by JS from sprites.json) */
+  .spr { display: inline-block; height: var(--h, 100px); background-repeat: no-repeat; background-size: auto 100%; image-rendering: auto; }
+  @keyframes spr { to { background-position-x: var(--x); } }
+  .flip { transform: scaleX(-1); }
+
+  /* hero stage: tablet in landscape with a slideshow + live sprites */
+  .stage { position: relative; padding: 0 0 70px; }
+  .tab { position: relative; border-radius: 26px; padding: 12px; background: #15110f; border: 1px solid #3a2a20;
+    box-shadow: 0 40px 90px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.04) inset, 0 0 80px -20px rgba(255,138,61,.35); transform: rotate(-2deg); }
+  .tab .scr { position: relative; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; background: #000; }
+  .tab .scr img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1.2s ease, transform 6s linear; }
+  .tab .scr img.on { opacity: 1; transform: scale(1); }
+  .stage .actor { position: absolute; z-index: 3; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }
+  .stage .a1 { left: -4%; bottom: 0; }
+  .stage .a2 { right: -2%; bottom: 8px; }
+  .stage .obel { position: absolute; z-index: 2; left: 34%; bottom: -6px; width: 92px; animation: float 6s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(111,211,255,.55)); }
+
+  /* rune ring */
+  .runes { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+  .runes img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(242,195,91,.35)); animation: bob 4s ease-in-out infinite; }
+  .runes img:nth-child(2) { animation-delay: -1s; } .runes img:nth-child(3) { animation-delay: -2s; } .runes img:nth-child(4) { animation-delay: -3s; }
+
+  /* loop steps */
+  .loop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: st; }
+  .lp { position: relative; padding: 26px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; transition: transform .5s var(--spring), border-color .3s; }
+  .lp:hover { transform: translateY(-8px); border-color: var(--ember); }
+  .lp::before { counter-increment: st; content: counter(st, upper-roman); position: absolute; right: 14px; top: 6px; font: 700 64px/1 "Cinzel", serif; color: rgba(242,195,91,.09); }
+  .lp .pic { height: 180px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 14px; }
+  .lp .pic img { max-height: 140px; max-width: 100%; object-fit: contain; }
+  .lp h3 { font-size: 20px; margin: 0 0 6px; }
+  .lp p { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+
+  /* temple awakening */
+  .awake { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: clamp(28px, 5vw, 56px); border-radius: 32px; border: 1px solid var(--line-2);
+    background: radial-gradient(100% 120% at 100% 0%, rgba(242,195,91,.14), transparent 60%), #12100e; }
+  .shrine { position: relative; height: 340px; display: flex; align-items: center; justify-content: center; }
+  .shrine::before { content: ""; position: absolute; width: 360px; height: 180px; bottom: 40px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(242,195,91,.0), transparent); transition: background 1s; }
+  .shrine.on::before { background: radial-gradient(closest-side, rgba(242,195,91,.45), transparent); }
+  .shrine img { position: absolute; width: min(330px, 90%); transition: opacity 1s ease, transform 1s var(--spring), filter 1s; }
+  .shrine .dormant { filter: grayscale(.5) brightness(.75); }
+  .shrine .active { opacity: 0; transform: scale(.92); }
+  .shrine.on .dormant { opacity: 0; }
+  .shrine.on .active { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 30px rgba(242,195,91,.5)); }
+  .shrine .guard { position: absolute; transition: opacity .6s, transform .6s; }
+  .shrine.on .guard { opacity: 0; transform: translateY(20px) scale(.6); }
+  .shrine .g1 { left: 2%; bottom: 30px; } .shrine .g2 { right: 4%; bottom: 60px; } .shrine .g3 { right: 26%; bottom: 0; }
+  .shrine .burst { position: absolute; inset: 0; pointer-events: none; }
+  .shrine .burst i { position: absolute; left: 50%; top: 55%; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px var(--gold); opacity: 0; }
+  .shrine.flash .burst i { animation: spark 1.1s ease-out forwards; }
+  @keyframes spark { 0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--r)) translateY(0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--r)) translateY(-170px) scale(.3); } }
+  .state { font: 700 22px/1.3 var(--display); margin: 18px 0 4px; }
+  .state small { display: block; font: 500 15px/1.5 var(--sans); color: var(--ink-2); margin-top: 6px; }
+
+  /* element duel */
+  .duel { display: grid; grid-template-columns: 1.1fr 1fr; gap: 36px; align-items: center; padding: clamp(24px, 4vw, 48px); border-radius: 32px; border: 1px solid var(--line-2);
+    background: linear-gradient(90deg, rgba(255,138,61,.12), rgba(111,211,255,.12)), #0f0f12; }
+  .arena { position: relative; height: 340px; border-radius: 24px; overflow: hidden; background: radial-gradient(circle at 50% 120%, #2a2420, #121014 70%); border: 1px solid var(--line); }
+  .arena .hero { position: absolute; left: 6%; bottom: 26px; }
+  .arena .foe { position: absolute; right: 8%; bottom: 30px; transition: transform .2s; }
+  .arena .foe.hit { animation: hit .35s ease; }
+  @keyframes hit { 30% { transform: translateX(10px); filter: brightness(2.2); } }
+  .arena .bolt { position: absolute; width: 22px; height: 22px; border-radius: 50%; left: 26%; bottom: 120px; opacity: 0; }
+  .arena .bolt.fire { background: radial-gradient(circle, #fff3c4, #ff8a3d 50%, transparent 72%); box-shadow: 0 0 30px 10px rgba(255,138,61,.6); }
+  .arena .bolt.ice { background: radial-gradient(circle, #ffffff, #6fd3ff 50%, transparent 72%); box-shadow: 0 0 30px 10px rgba(111,211,255,.6); }
+  .arena .ring { position: absolute; left: 13%; bottom: 40px; width: 40px; height: 16px; border-radius: 50%; border: 3px solid var(--frost); opacity: 0; }
+  .arena .pop { position: absolute; right: 14%; bottom: 190px; font: 800 34px/1 var(--display); opacity: 0; text-shadow: 0 4px 14px rgba(0,0,0,.7); }
+  .pick { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .pick button { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 8px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink); font: 600 14px/1 var(--sans); cursor: pointer; transition: transform .3s var(--spring), border-color .2s, background .2s; }
+  .pick button img { width: 34px; height: 34px; object-fit: contain; }
+  .pick button .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; }
+  .pick button:hover { transform: translateY(-3px); }
+  .pick button.sel { border-color: var(--ember); background: color-mix(in srgb, var(--ember) 16%, var(--bg-2)); }
+  .pick.ice button.sel { border-color: var(--frost); background: color-mix(in srgb, var(--frost) 14%, var(--bg-2)); }
+  .calc { font: 800 clamp(36px, 5vw, 60px)/1 var(--display); letter-spacing: -.03em; margin-top: 10px; }
+  .calc small { display: block; font: 500 15px/1.5 var(--sans); color: var(--ink-2); letter-spacing: 0; margin-top: 8px; }
+  .mult { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 22px; }
+  .mult div { padding: 14px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--line); font-size: 13.5px; color: var(--ink-2); }
+  .mult b { display: block; font: 800 22px/1.1 var(--display); color: var(--ink); }
+
+  /* hero builder */
+  .builder { display: grid; grid-template-columns: .8fr 1.2fr; gap: 36px; align-items: center; }
+  .portrait { position: relative; height: 380px; display: flex; align-items: flex-end; justify-content: center; border-radius: 28px; overflow: hidden;
+    background: radial-gradient(70% 60% at 50% 70%, rgba(242,195,91,.22), transparent 70%), #121014; border: 1px solid var(--line-2); }
+  .portrait img { position: absolute; bottom: 24px; height: 300px; transition: opacity .5s, transform .6s var(--spring); }
+  .portrait img.off { opacity: 0; transform: translateY(16px) scale(.96); }
+  .portrait .seg { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: rgba(0,0,0,.45); border: 1px solid var(--line-2); }
+  .seg button { border: 0; background: none; color: var(--ink-2); font: 600 13px/1 var(--sans); padding: 8px 14px; border-radius: 99px; cursor: pointer; }
+  .seg button.sel { background: var(--gold); color: #1a1208; }
+  .attrs { display: grid; gap: 10px; }
+  .attr { display: grid; grid-template-columns: 130px 1fr 92px; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--line); }
+  .attr b { font: 700 15px/1.2 var(--display); }
+  .attr small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; font-family: var(--sans); margin-top: 3px; }
+  .pips { display: flex; gap: 5px; }
+  .pips i { flex: 1; height: 10px; border-radius: 4px; background: rgba(255,255,255,.08); transition: background .3s, transform .3s var(--spring); }
+  .pips i.on { background: linear-gradient(90deg, var(--gold), var(--ember)); transform: scaleY(1.25); }
+  .pm { display: flex; gap: 6px; justify-content: flex-end; }
+  .pm button { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255,255,255,.04); color: var(--ink); font: 700 18px/1 var(--sans); cursor: pointer; }
+  .pm button:disabled { opacity: .3; cursor: default; }
+  .left { font: 600 15px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 12px; }
+  .left b { color: var(--gold); font-size: 20px; }
+
+  .trees { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .tree { padding: 24px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); }
+  .tree h3 { font-size: 20px; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .tree h3 img { width: 34px; }
+  .tree ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .tree li { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 14.5px; color: var(--ink-2); }
+  .tree li span.r { display: flex; gap: 3px; }
+  .tree li span.r i { width: 9px; height: 9px; border-radius: 2px; transform: rotate(45deg); border: 1px solid var(--tc); }
+  .tree li span.r i.f { background: var(--tc); }
+  .tree .note { margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+
+  .slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 16px; }
+  .slot { aspect-ratio: 1; border-radius: 18px; background: radial-gradient(circle at 50% 35%, rgba(242,195,91,.12), transparent 70%), #141114; border: 1px solid #3a2e22;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform .4s var(--spring); }
+  .slot:hover { transform: translateY(-6px) rotate(-2deg); }
+  .slot img { width: 54%; height: 54%; object-fit: contain; }
+  .slot span { font-size: 12px; color: var(--muted); }
+
+  /* armies */
+  .races { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .races button { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 10px; border-radius: 16px; border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink); font: 700 15px/1 var(--display); cursor: pointer; transition: border-color .2s, background .2s, transform .3s var(--spring); }
+  .races button img { width: 32px; height: 32px; object-fit: contain; }
+  .races button.sel { border-color: var(--rc); background: color-mix(in srgb, var(--rc) 14%, var(--bg-2)); transform: translateY(-2px); }
+  .race { display: none; grid-template-columns: .9fr 1fr 1fr; gap: 16px; }
+  .race.on { display: grid; animation: rin .6s var(--spring); }
+  @keyframes rin { from { opacity: 0; transform: translateY(16px); } }
+  .rinfo { padding: 26px; border-radius: 22px; border: 1px solid var(--line); background: linear-gradient(160deg, color-mix(in srgb, var(--rc) 14%, transparent), transparent 70%), var(--bg-2); }
+  .rinfo h3 { font-size: 26px; margin: 0 0 6px; }
+  .rinfo p { color: var(--ink-2); font-size: 14.5px; margin: 0 0 10px; }
+  .rinfo .tag { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; padding: 6px 10px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--ink-2); }
+  .unit { position: relative; padding: 22px; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); display: flex; flex-direction: column; }
+  .unit .pad { height: 190px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; border-radius: 16px; margin-bottom: 14px;
+    background: radial-gradient(60% 40% at 50% 85%, color-mix(in srgb, var(--rc) 25%, transparent), transparent 70%), #121014; }
+  .unit h4 { margin: 0 0 4px; font: 700 18px/1.2 var(--display); }
+  .unit p { margin: 0 0 12px; font-size: 13.5px; color: var(--muted); }
+  .bar { display: grid; grid-template-columns: 54px 1fr 34px; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+  .bar i { height: 8px; border-radius: 4px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .bar i::after { content: ""; display: block; height: 100%; width: calc(var(--v) * 1%); background: var(--rc); border-radius: 4px; transform-origin: left; animation: grow 1s var(--spring); }
+  @keyframes grow { from { transform: scaleX(0); } }
+  .bar b { text-align: right; color: var(--ink); }
+  .rlv { position: absolute; top: 16px; right: 16px; font: 700 12px/1 var(--sans); padding: 6px 8px; border-radius: 8px; background: rgba(0,0,0,.45); color: var(--gold); border: 1px solid #4a3a22; }
+
+  /* chapters */
+  .chapters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .chap { position: relative; border-radius: 26px; overflow: hidden; border: 1px solid var(--line-2); min-height: 520px; display: flex; flex-direction: column; justify-content: flex-end; isolation: isolate; transition: transform .6s var(--spring); }
+  .chap:hover { transform: translateY(-8px); }
+  .chap > img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1.2s ease; }
+  .chap:hover > img.bg { transform: scale(1.07); }
+  .chap::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,8,8,.1) 0%, rgba(10,8,8,.55) 40%, rgba(10,8,8,.96) 78%); }
+  .chap .in { padding: 26px; }
+  .chap .no { font: 700 13px/1 "Cinzel", serif; letter-spacing: .14em; color: var(--chc); }
+  .chap h3 { font: 700 28px/1.1 "Cinzel", serif; margin: 10px 0 10px; }
+  .chap p { color: var(--ink-2); font-size: 14.5px; margin: 0 0 14px; }
+  .chap .boss { display: flex; overflow: hidden; align-items: flex-end; gap: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); }
+  .chap .boss small { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .chap .boss b { font: 700 15px/1.3 var(--display); }
+  .chap .el { position: absolute; top: 18px; right: 18px; font: 700 12px/1 var(--sans); padding: 7px 10px; border-radius: 99px; background: rgba(0,0,0,.5); border: 1px solid var(--chc); color: var(--chc); }
+
+  /* parade */
+  .parade { position: relative; height: 210px; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, transparent, rgba(255,138,61,.05)); }
+  .parade .w { position: absolute; bottom: 18px; left: 100%; animation: walk var(--t) linear infinite; animation-delay: var(--dl); }
+  @keyframes walk { to { transform: translateX(calc(-100vw - 360px)); } }
+  .parade .lbl { position: absolute; left: 24px; top: 16px; font: 700 12px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+  .tech { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 1020px) {
+    .awake, .duel, .builder { grid-template-columns: 1fr; }
+    .loop, .trees { grid-template-columns: repeat(2, 1fr); }
+    .race.on { grid-template-columns: 1fr 1fr; } .rinfo { grid-column: 1 / -1; }
+    .chapters { grid-template-columns: 1fr; } .chap { min-height: 440px; }
+    .tech { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .loop, .trees, .tech, .race.on { grid-template-columns: 1fr; }
+    .slots { grid-template-columns: repeat(3, 1fr); }
+    .attr { grid-template-columns: 1fr 92px; } .attr .pips { grid-column: 1 / -1; grid-row: 2; }
+    .mult { grid-template-columns: 1fr; }
+    .stage .obel { width: 64px; }
+    .stage .a1 { transform: scale(.6); transform-origin: left bottom; } .stage .a2 { transform: scale(.6); transform-origin: right bottom; }
+    .arena { height: 280px; } .arena .hero { transform: scale(.65); transform-origin: left bottom; left: 2%; } .arena .foe { transform: scale(.65); transform-origin: right bottom; right: 2%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .spr, .parade .w { animation: none !important; } }
+</style>
+</head>
+<body>
+<section class="phero">
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true" style="--a1:#7a2e0e;--a2:var(--ember);--a3:#1c3a52;--a4:var(--gold)"><b></b><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <div class="phero-grid">
+      <div>
+        <div class="app-id reveal"><img src="../../assets/icons/runehold.png" alt="">
+          <span class="chip hot pulse"><span lang="tr">Kapalı beta yakında</span><span lang="en">Closed beta soon</span> · Android</span></div>
+        <h1 class="h-xl title-rh reveal" style="--d:.2s">Runehold</h1>
+        <p class="lede reveal" style="--d:.4s;font-size:clamp(20px,2.4vw,28px);font-weight:600;color:var(--ink)"><span lang="tr">Tapınağı uyandır · Köyünü kur · Ordunu savaşa götür</span><span lang="en">Wake the temple · Build your village · Lead your army</span></p>
+        <p class="lede reveal" style="--d:.5s"><span lang="tr">Android için izometrik bir fantastik aksiyon RPG; içinde hafif bir strateji oyunu saklı. Büyük haritalarda kahramanınla savaşarak ilerle, antik tapınakları koruyucularından kurtar, köy kur, asker yetiştir ve ateşe karşı buzla, buza karşı ateşle dövüş.</span><span lang="en">An isometric fantasy action RPG for Android with a light strategy game hidden inside. Fight your way across large maps with your hero, free ancient temples from their guardians, build a village, train soldiers, and fight fire with ice and ice with fire.</span></p>
+        <div class="btns reveal" style="--d:.65s">
+          <a class="btn" href="#elementler" data-magnet>🔥 <span lang="tr">Büyü at, dene</span><span lang="en">Cast a spell</span></a>
+          <a class="btn ghost" href="#bolumler" data-magnet><span lang="tr">Bölümler</span><span lang="en">Chapters</span></a>
+        </div>
+      </div>
+      <div class="stage reveal zoom" style="--d:.3s">
+        <div class="tab"><div class="scr" id="slides">
+          <img class="on" src="img/04_ash_exile.jpg" alt="Kül Sürgünü">
+          <img src="img/01_human_village.jpg" alt="İnsan köyü">
+          <img src="img/03_elven_wilds.jpg" alt="Elf Diyarı">
+          <img src="img/02_temple_valley.jpg" alt="Tapınak vadisi">
+        </div></div>
+        <img class="obel" src="img/art/rune_obelisk_awake.webp" alt="">
+        <i class="actor a1 spr" data-s="hero" data-a="cast_se" style="--h:225px"></i>
+        <i class="actor a2 spr" data-s="imp_chieftain" data-a="attack_sw" style="--h:180px"></i>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true"></div>
+</section>
+
+<div class="parade" aria-hidden="true" id="parade"><span class="lbl"><span lang="tr">Yolda karşılaşacakların</span><span lang="en">Who you'll meet on the road</span></span></div>
+
+<section class="section" id="nasil">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Nasıl oynanır</span><span lang="en">How it plays</span></p>
+      <h2 class="h-l split"><span lang="tr">Kılıçla başlar, orduyla biter</span><span lang="en">It starts with a sword, ends with an army</span></h2>
+      <p class="reveal"><span lang="tr">Her bölüm 96×96 karelik büyük bir harita. Bir antik rün geçidinden girersin; amaç haritanın öbür ucuna ulaşıp bölümün boss'unu yenmek.</span><span lang="en">Every chapter is a large 96×96 map. You enter through an ancient rune gate; the goal is to reach the far side and beat the chapter boss.</span></p>
+    </div>
+    <div class="loop" data-stagger=".1">
+      <div class="lp reveal"><div class="pic"><i class="spr" data-s="hero" data-a="attack_se" style="--h:180px"></i></div><h3><span lang="tr">Savaş</span><span lang="en">Fight</span></h3><p><span lang="tr">Yere dokun, yürü; düşmana dokun, saldır. Öldürdüğün her yaratık ve bitirdiğin her görev deneyim kazandırır.</span><span lang="en">Tap the ground to walk, tap an enemy to attack. Every creature you slay and every quest you finish earns experience.</span></p></div>
+      <div class="lp reveal"><div class="pic"><img src="img/art/human_temple_active.webp" alt=""></div><h3><span lang="tr">Tapınağı uyandır</span><span lang="en">Wake the temple</span></h3><p><span lang="tr">Koruyucuları ölmeden tapınak uyanmaz. Uyanınca yeniden doğma noktan ve köyünün kalbi olur.</span><span lang="en">A temple won't wake while its guardians live. Once awake it becomes your respawn point and the heart of your village.</span></p></div>
+      <div class="lp reveal"><div class="pic"><img src="img/art/human_blacksmith.webp" alt=""></div><h3><span lang="tr">Köyünü kur</span><span lang="en">Build your village</span></h3><p><span lang="tr">İşçiler odun, taş ve yiyecek toplar. İşçiyi seç, kurabileceği binalar altta listelenir; dokun, yerleşsin.</span><span lang="en">Workers gather wood, stone and food. Select a worker and the buildings they can raise appear below; tap one and it's placed.</span></p></div>
+      <div class="lp reveal"><div class="pic"><i class="spr" data-s="swordsman" data-a="attack_se" style="--h:150px"></i><i class="spr" data-s="archer" data-a="attack_se" style="--h:144px;margin-left:-14px"></i></div><h3><span lang="tr">Ordunu kur</span><span lang="en">Raise your army</span></h3><p><span lang="tr">Askerler seni takip eder. Takip et, Saldır, Bekle; okçuları ya da piyadeleri ayrı gruplar hâlinde yönet.</span><span lang="en">Soldiers follow you. Follow, Attack, Hold; command archers and infantry as separate groups.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="awake reveal zoom">
+      <div>
+        <p class="eyebrow"><span lang="tr">Tapınaklar</span><span lang="en">Temples</span></p>
+        <h2 class="h-l"><span lang="tr">Önce koruyucular</span><span lang="en">Guardians first</span></h2>
+        <p class="lede" style="font-size:17px"><span lang="tr">Tapınaklar kendiliğinden asker üretmez. Uyandırınca ona dokunursun; o ırkın işçi ve askerleri listelenir, köy kaynağı ve süre karşılığında sıraya koyarsın. Kahraman ölürse en son uyandırdığı tapınakta yeniden doğar ama ordu kayıpları kalıcıdır.</span><span lang="en">Temples don't produce soldiers on their own. Once awake you tap it, that race's workers and soldiers are listed, and you queue them for village resources and time. If the hero dies, they respawn at the last temple they woke, but fallen soldiers stay fallen.</span></p>
+        <div class="state" id="tstate"></div>
+        <div class="btns"><button class="btn" id="wake" type="button" data-magnet>✨ <span lang="tr">Koruyucuları yen</span><span lang="en">Defeat the guardians</span></button></div>
+      </div>
+      <div class="shrine" id="shrine" aria-hidden="true">
+        <img class="dormant" src="img/art/human_temple_dormant.webp" alt="">
+        <img class="active" src="img/art/human_temple_active.webp" alt="">
+        <i class="guard g1 spr" data-s="fire_imp" data-a="idle_sw" style="--h:120px"></i>
+        <i class="guard g2 spr" data-s="orc_warrior" data-a="idle_sw" style="--h:165px"></i>
+        <i class="guard g3 spr" data-s="fire_salamander" data-a="idle_sw" style="--h:69px"></i>
+        <div class="burst"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="elementler" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Ateş ve buz</span><span lang="en">Fire and ice</span></p>
+      <h2 class="h-l split"><span lang="tr">Düşmanın ırkı değil, elementi önemli</span><span lang="en">An enemy's element matters, not its race</span></h2>
+      <p class="reveal"><span lang="tr">Her harita tek bir elemente ait. Buz büyüleri ateş yaratıklarını yakar geçer, ateş büyüleri buz yaratıklarını parçalar; kendi elementine karşı ise zayıf kalır. Aynı ırk bir haritada düşman, ötekinde müttefik olabilir.</span><span lang="en">Every map belongs to one element. Ice spells burn through fire creatures and fire spells shatter ice ones, but a spell is weak against its own element. The same race can be your enemy on one map and your ally on the next.</span></p>
+    </div>
+    <div class="duel reveal zoom">
+      <div class="arena" id="arena" aria-hidden="true">
+        <i class="hero spr" id="caster" data-s="hero" data-a="cast_se" style="--h:225px"></i>
+        <div class="ring" id="fring"></div>
+        <div class="bolt" id="bolt"></div>
+        <i class="foe spr" id="foe" data-s="ice_golem" data-a="idle_sw" style="--h:195px"></i>
+        <div class="pop" id="pop"></div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin:0"><span lang="tr">Büyünü seç</span><span lang="en">Pick a spell</span></p>
+        <div class="pick" id="spells"></div>
+        <p class="eyebrow" style="margin:18px 0 0"><span lang="tr">Hedefini seç</span><span lang="en">Pick a target</span></p>
+        <div class="pick" id="foes"></div>
+        <div class="calc" id="calc"></div>
+        <div class="btns"><button class="btn" id="cast" type="button" data-magnet>🔥 <span lang="tr">Büyü at</span><span lang="en">Cast</span></button></div>
+      </div>
+    </div>
+    <div class="mult" data-stagger=".08">
+      <div class="reveal"><b>×1,5</b><span lang="tr">Karşıt elemente büyü: buz → ateş, ateş → buz</span><span lang="en">Spell vs the opposite element: ice → fire, fire → ice</span></div>
+      <div class="reveal"><b>×0,75</b><span lang="tr">Aynı elemente büyü: ateş → ateş, buz → buz</span><span lang="en">Spell vs the same element: fire → fire, ice → ice</span></div>
+      <div class="reveal"><b>×1,5 · ×0,75</b><span lang="tr">İnsan ve elf askerleri ateşe, cüce ve orklar buza karşı güçlü ve dayanıklı</span><span lang="en">Human and elf soldiers are strong and resistant against fire; dwarves and orcs against ice</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="kahraman" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Kahraman</span><span lang="en">The hero</span></p>
+      <h2 class="h-l split"><span lang="tr">Seninle birlikte büyür</span><span lang="en">Grows along with you</span></h2>
+      <p class="reveal"><span lang="tr">Kahraman her zaman insan. Cinsiyetini seçer, başlangıç puanlarını dağıtırsın; her seviyede 3 özellik puanı ve yetenek puanı gelir. Seviye, yetenekler, ekipman, büyüler ve altın bölümden bölüme taşınır.</span><span lang="en">The hero is always human. You pick a gender and spend the starting points; every level brings 3 attribute points and a skill point. Level, skills, gear, spells and gold carry over from chapter to chapter.</span></p>
+    </div>
+    <div class="builder">
+      <div class="portrait reveal zoom">
+        <div class="seg" role="group"><button type="button" class="sel" data-g="m"><span lang="tr">Erkek</span><span lang="en">Male</span></button><button type="button" data-g="f"><span lang="tr">Kadın</span><span lang="en">Female</span></button></div>
+        <img id="pm" src="img/art/hero_s.webp" alt="">
+        <img id="pf" class="off" src="img/art/hero_female_s.webp" alt="">
+      </div>
+      <div class="reveal">
+        <p class="left"><span lang="tr">Dağıtılacak puan:</span><span lang="en">Points to spend:</span> <b id="left">5</b></p>
+        <div class="attrs" id="attrs"></div>
+      </div>
+    </div>
+    <div class="trees" data-stagger=".08">
+      <div class="tree reveal" style="--tc:var(--gold)"><h3><img src="img/art/iron_sword.webp" alt=""><span lang="tr">Savaş</span><span lang="en">Combat</span></h3>
+        <ul><li><span lang="tr">Hafif Silahlar</span><span lang="en">Light Weapons</span><span class="r"></span></li><li><span lang="tr">Ağır Silahlar</span><span lang="en">Heavy Weapons</span><span class="r"></span></li><li><span lang="tr">Kalkan</span><span lang="en">Shield</span><span class="r"></span></li><li><span lang="tr">Hafif Zırh</span><span lang="en">Light Armor</span><span class="r"></span></li><li><span lang="tr">Ağır Zırh</span><span lang="en">Heavy Armor</span><span class="r"></span></li></ul>
+        <p class="note"><span lang="tr">Ağır Zırh açılmadan plaka zırh giyilmez.</span><span lang="en">No plate armor until Heavy Armor is unlocked.</span></p></div>
+      <div class="tree reveal" style="--tc:var(--ember)"><h3><img src="img/art/tome_fireball.webp" alt=""><span lang="tr">Ateş Büyüsü</span><span lang="en">Fire Magic</span></h3>
+        <ul><li><span lang="tr">Ateş Oku</span><span lang="en">Fire Bolt</span><span class="r" data-need="1"></span></li><li><span lang="tr">Ateş Topu</span><span lang="en">Fireball</span><span class="r" data-need="2"></span></li></ul>
+        <p class="note"><span lang="tr">Ateş 2 açılmadan Ateş Topu satın alınmaz; açtığın yetenek, tüccarda alabileceğin büyüyü ve eşyayı belirler.</span><span lang="en">No Fireball until Fire 2; the skills you unlock decide which spells and gear merchants will sell you.</span></p></div>
+      <div class="tree reveal" style="--tc:var(--frost)"><h3><img src="img/art/tome_frost_ring.webp" alt=""><span lang="tr">Buz Büyüsü</span><span lang="en">Ice Magic</span></h3>
+        <ul><li><span lang="tr">Buz Kıymığı</span><span lang="en">Ice Shard</span><span class="r" data-need="1"></span></li><li><span lang="tr">Ayaz Halkası</span><span lang="en">Frost Ring</span><span class="r" data-need="2"></span></li></ul>
+        <p class="note"><span lang="tr">Buz Kıymığı hedefi yavaşlatır, Ayaz Halkası etrafındaki herkesi dondurur.</span><span lang="en">Ice Shard slows its target; Frost Ring freezes everyone around you.</span></p></div>
+    </div>
+    <div class="slots" data-stagger=".06">
+      <div class="slot reveal"><img src="img/art/iron_sword.webp" alt=""><span lang="tr">Silah</span><span lang="en">Weapon</span></div>
+      <div class="slot reveal"><img src="img/art/iron_shield.webp" alt=""><span lang="tr">Kalkan</span><span lang="en">Shield</span></div>
+      <div class="slot reveal"><img src="img/art/plate_armor.webp" alt=""><span lang="tr">Zırh</span><span lang="en">Armor</span></div>
+      <div class="slot reveal"><img src="img/art/iron_helm.webp" alt=""><span lang="tr">Kask</span><span lang="en">Helmet</span></div>
+      <div class="slot reveal"><img src="img/art/ring_of_embers.webp" alt=""><span lang="tr">Yüzük</span><span lang="en">Ring</span></div>
+      <div class="slot reveal"><img src="img/art/ring_of_frost.webp" alt=""><span lang="tr">Yüzük</span><span lang="en">Ring</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ordu" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Dört ırk, dört ordu</span><span lang="en">Four races, four armies</span></p>
+      <h2 class="h-l split"><span lang="tr">Rün taşı olmadan tek asker yok</span><span lang="en">No rune stone, no soldiers</span></h2>
+      <p class="reveal"><span lang="tr">Kahramanın rün tahtasında her ırk için bir yuva var. O ırkın rün taşı tahtada değilse tek bir birim bile üretemezsin. Taşın seviyesi işçi sayısını, ordu sınırını, açılan asker türlerini ve askerlerin gücünü belirler.</span><span lang="en">The hero's rune board has one slot per race. Without that race's rune stone on the board you can't produce a single unit. The stone's level sets the worker count, the army cap, which soldier types unlock and how strong they are.</span></p>
+    </div>
+    <div class="races reveal" id="races">
+      <button type="button" class="sel" data-r="human" style="--rc:#f2c35b"><img src="img/art/rune_human.webp" alt=""><span lang="tr">İnsan</span><span lang="en">Human</span></button>
+      <button type="button" data-r="orc" style="--rc:#9be15d"><img src="img/art/rune_orc.webp" alt=""><span lang="tr">Ork</span><span lang="en">Orc</span></button>
+      <button type="button" data-r="elf" style="--rc:#7fe0c8"><img src="img/art/rune_elf.webp" alt=""><span lang="tr">Elf</span><span lang="en">Elf</span></button>
+      <button type="button" data-r="dwarf" style="--rc:#ffb36b"><img src="img/art/rune_dwarf.webp" alt=""><span lang="tr">Cüce</span><span lang="en">Dwarf</span></button>
+    </div>
+    <div id="raceViews"></div>
+  </div>
+</section>
+
+<section class="section" id="bolumler" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Bölümler</span><span lang="en">Chapters</span></p>
+      <h2 class="h-l split"><span lang="tr">Üç harita, üç farklı oyun</span><span lang="en">Three maps, three different games</span></h2>
+      <p class="reveal"><span lang="tr">Ordu, işçiler ve köy bir sonraki haritaya taşınmaz; her bölümde sıfırdan kurulur. Her bölümün sonundaki sandıkta bir sonraki ırkın rün taşı seni bekler.</span><span lang="en">Your army, workers and village don't carry over; each chapter you build again from scratch. A chest at the end of each chapter holds the next race's rune stone.</span></p>
+    </div>
+    <div class="chapters" data-stagger=".1">
+      <article class="chap reveal" style="--chc:var(--ember)">
+        <img class="bg" src="img/01_human_village.jpg" alt="" loading="lazy">
+        <span class="el">🔥 <span lang="tr">Ateş</span><span lang="en">Fire</span></span>
+        <div class="in">
+          <div class="no"><span lang="tr">BÖLÜM I</span><span lang="en">CHAPTER I</span></div>
+          <h3><span lang="tr">Yanan Vadi</span><span lang="en">The Burning Valley</span></h3>
+          <p><span lang="tr">Bir insan köyünü ateş yaratıklarına ve orklara karşı savun. Surdaki kapıyı aç, kuşatılmış köyü kurtar, kaleyi yık.</span><span lang="en">Defend a human village against fire creatures and orcs. Open the gate in the wall, free the besieged town, tear down the fortress.</span></p>
+          <div class="boss"><i class="spr" data-s="imp_chieftain" data-a="idle_sw" style="--h:96px"></i><div><small>Boss</small><b><span lang="tr">İblis Reisi · Ork Savaş Beyi</span><span lang="en">Imp Chieftain · Orc Warlord</span></b></div></div>
+        </div>
+      </article>
+      <article class="chap reveal" style="--chc:var(--frost)">
+        <img class="bg" src="img/03_elven_wilds.jpg" alt="" loading="lazy">
+        <span class="el">❄️ <span lang="tr">Buz</span><span lang="en">Ice</span></span>
+        <div class="in">
+          <div class="no"><span lang="tr">BÖLÜM II</span><span lang="en">CHAPTER II</span></div>
+          <h3><span lang="tr">Elf Diyarı</span><span lang="en">The Elven Wilds</span></h3>
+          <p><span lang="tr">Donmuş bir orman. Bu kez orkları yönetiyorsun: asi elflere, ayaz kurtlarına ve buz golemlerine karşı.</span><span lang="en">A frozen forest. This time you lead orcs, against rebel elves, frost wolves and ice golems.</span></p>
+          <div class="boss"><i class="spr" data-s="ice_golem" data-a="idle_sw" style="--h:96px"></i><div><small>Boss</small><b><span lang="tr">Gaspçı Vaelis</span><span lang="en">Vaelis the Usurper</span></b></div></div>
+        </div>
+      </article>
+      <article class="chap reveal" style="--chc:var(--gold)">
+        <img class="bg" src="img/04_ash_exile.jpg" alt="" loading="lazy">
+        <span class="el">🔥 <span lang="tr">Ateş · saf RPG</span><span lang="en">Fire · pure RPG</span></span>
+        <div class="in">
+          <div class="no"><span lang="tr">BÖLÜM III</span><span lang="en">CHAPTER III</span></div>
+          <h3><span lang="tr">Kül Sürgünü</span><span lang="en">The Ash Exile</span></h3>
+          <p><span lang="tr">Köy yok, ordu yok. Kül kanyonlarından oluşan bir labirentte yalnızsın; kontrol noktası, dokununca canını ve manayı dolduran rün dikilitaşları.</span><span lang="en">No village, no army. You're alone in a maze of ash canyons; your checkpoints are rune obelisks that refill health and mana when touched.</span></p>
+          <div class="boss"><i class="spr" data-s="demon_prince" data-a="idle_sw" style="--h:96px"></i><div><small>Boss</small><b><span lang="tr">Skarra · Morvane · Gorrak · Köz Prensi Azhrael</span><span lang="en">Skarra · Morvane · Gorrak · Azhrael, the Ember Prince</span></b></div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Görseller</span><span lang="en">Screenshots</span></p>
+      <h2 class="h-l split"><span lang="tr">Oyundan kareler</span><span lang="en">From the game</span></h2>
+      <p class="reveal"><span lang="tr">Geliştirme sürümünden; ekranın üstündeki küçük ipucu satırı yalnızca test içindir.</span><span lang="en">From a development build; the small hint line at the top is for testing only.</span></p>
+    </div>
+    <div class="gallery land reveal">
+      <figure><img src="img/01_human_village.jpg" alt="" loading="lazy"><figcaption><span lang="tr">İnsan köyü, demirci yeni bitti</span><span lang="en">Human village, the smithy just finished</span></figcaption></figure>
+      <figure><img src="img/02_temple_valley.jpg" alt="" loading="lazy"><figcaption><span lang="tr">Tapınak vadisi</span><span lang="en">Temple valley</span></figcaption></figure>
+      <figure><img src="img/03_elven_wilds.jpg" alt="" loading="lazy"><figcaption><span lang="tr">Elf Diyarı, rün dikilitaşı</span><span lang="en">Elven Wilds, a rune obelisk</span></figcaption></figure>
+      <figure><img src="img/04_ash_exile.jpg" alt="" loading="lazy"><figcaption><span lang="tr">Kül Sürgünü, tarikat sunağı</span><span lang="en">Ash Exile, the cult altar</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">Nasıl yapıldı</span><span lang="en">How it's made</span></p>
+      <h2 class="h-l split"><span lang="tr">Godot 4, Blender ve parmaklar</span><span lang="en">Godot 4, Blender and fingers</span></h2>
+    </div>
+    <div class="tech" data-stagger=".08">
+      <div class="feat reveal"><div class="ico">🧊</div><h3><span lang="tr">Blender'da kod ile modellendi</span><span lang="en">Modelled in Blender with code</span></h3><p><span lang="tr">Karakterler, binalar ve eşyalar Python betikleriyle Blender'da üretilip 8 yönden sprite olarak çizildi. Bu sayfadaki her figür oyunun kendi animasyon karesi.</span><span lang="en">Characters, buildings and items are generated in Blender with Python scripts and rendered as sprites from 8 directions. Every figure on this page is a frame from the game itself.</span></p></div>
+      <div class="feat reveal"><div class="ico">👆</div><h3><span lang="tr">Dokunmatik için tasarlandı</span><span lang="en">Designed for touch</span></h3><p><span lang="tr">Dokun yürü, sürükle seç, iki parmakla kaydır ve yakınlaştır. Ordu komutları ve büyüler için büyük düğmeler.</span><span lang="en">Tap to walk, drag to select, two fingers to pan and zoom. Big buttons for army commands and spells.</span></p></div>
+      <div class="feat reveal"><div class="ico">⚙️</div><h3><span lang="tr">Orta seviye cihazlarda da</span><span lang="en">Runs on mid-range devices</span></h3><p><span lang="tr">Düşük, Orta ve Yüksek grafik ayarı; orta seviye telefon ve tabletler için.</span><span lang="en">Low, Medium and High graphics settings, for mid-range phones and tablets.</span></p></div>
+      <div class="feat reveal"><div class="ico">📜</div><h3><span lang="tr">Görevler ve diyaloglar</span><span lang="en">Quests and dialogue</span></h3><p><span lang="tr">Seçenekli diyaloglar, ilan tahtası ödülleri, tüccarlar, sandıklar ve köyüne gelen baskınlar.</span><span lang="en">Dialogue with choices, notice-board bounties, merchants, treasure chests and raids on your village.</span></p></div>
+      <div class="feat reveal"><div class="ico">💾</div><h3><span lang="tr">Otomatik ve elle kayıt</span><span lang="en">Auto and manual saves</span></h3><p><span lang="tr">Önemli anlarda otomatik kayıt, yanında üç elle kayıt yuvası. Köy, ordu, açılan sandıklar; haritanın tamamı kaydedilir.</span><span lang="en">An autosave at important moments plus three manual slots. Village, army, opened chests: the whole map is saved.</span></p></div>
+      <div class="feat reveal"><div class="ico">🌍</div><h3><span lang="tr">Türkçe ve İngilizce</span><span lang="en">Turkish and English</span></h3><p><span lang="tr">Oyunun tüm metinleri iki dilde.</span><span lang="en">All of the game's text in both languages.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow reveal"><span lang="tr">İndir</span><span lang="en">Download</span></p>
+      <h2 class="h-l split"><span lang="tr">Rünler hazırlanıyor</span><span lang="en">The runes are being carved</span></h2>
+      <p class="reveal"><span lang="tr">Kapalı beta çok yakında başlıyor. Beta sürümleri imzalı APK olarak yayınlanacak.</span><span lang="en">A closed beta starts very soon. Beta builds will ship as signed APKs.</span></p>
+    </div>
+    <div class="runes reveal" style="margin-bottom:34px" aria-hidden="true">
+      <img src="img/art/rune_human.webp" alt=""><img src="img/art/rune_orc.webp" alt=""><img src="img/art/rune_elf.webp" alt=""><img src="img/art/rune_dwarf.webp" alt="">
+    </div>
+    <div class="dls" data-stagger=".1" style="grid-template-columns:1fr;max-width:420px;margin:0 auto">
+      <div class="dl reveal"><div class="pf">🤖</div><h3>Android</h3><p><span lang="tr">Telefon ve tablet · yatay ekran</span><span lang="en">Phone and tablet · landscape</span></p><span class="btn off"><span lang="tr">Kapalı beta yakında</span><span lang="en">Closed beta soon</span></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="privacy reveal">
+      <div class="shield">🔒</div>
+      <div>
+        <h2 class="h-m" style="margin-bottom:14px"><span lang="tr">Gizlilik</span><span lang="en">Privacy</span></h2>
+        <p><span lang="tr">Runehold internete bağlanmaz ve hiçbir izin istemez. Reklam, analiz ya da izleme yok; hesap yok.</span><span lang="en">Runehold doesn't connect to the internet and asks for no permissions. No ads, analytics or tracking; no account.</span></p>
+        <p><span lang="tr">Kayıtların ve ayarların yalnızca cihazında, oyunun kendi klasöründe durur.</span><span lang="en">Your saves and settings stay on your device, in the game's own folder.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow reveal"><span lang="tr">Diğer projeler</span><span lang="en">Other projects</span></p>
+    <div class="pager" data-stagger=".08">
+      <a class="reveal" href="../pocketfarm/index.html" style="--pc:var(--farm)"><img src="../../assets/icons/pocketfarm.png" alt=""><span><b>PocketFarm</b><small lang="tr">Çiftlik oyunu</small><small lang="en">Farming game</small></span></a>
+      <a class="reveal" href="../pocketville/index.html" style="--pc:var(--ville)"><img src="../../assets/icons/pocketville.png" alt=""><span><b>PocketVille</b><small lang="tr">Şehir kurma</small><small lang="en">City builder</small></span></a>
+      <a class="reveal" href="../dicereign/index.html" style="--pc:var(--dice)"><img src="../../assets/icons/dicereign.png" alt=""><span><b>Dice Reign</b><small lang="tr">Zarlı strateji</small><small lang="en">Dice strategy</small></span></a>
+      <a class="reveal" href="../synapse/index.html" style="--pc:var(--syn)"><img src="../../assets/icons/synapse.png" alt=""><span><b>Synapse</b><small lang="tr">Telefon ↔ Mac</small><small lang="en">Phone ↔ Mac</small></span></a>
+      <a class="reveal" href="../zeta/index.html" style="--pc:var(--zeta)"><img src="../../assets/icons/zeta.png" alt=""><span><b>Zeta</b><small lang="tr">Arayüz paketi</small><small lang="en">Interface suite</small></span></a>
+    </div>
+  </div>
+</section>
+<script src="../../assets/site.js?v=5"></script>
+<script>
+(function () {
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var tr = function () { return document.documentElement.dataset.lang === "tr"; };
+  var SP = null;
+
+  /* ---- sprite strips ---- */
+  function paint(el) {
+    var d = SP && SP[el.dataset.s] && SP[el.dataset.s][el.dataset.a]; if (!d) return;
+    var h = parseFloat(getComputedStyle(el).height) || 100, w = h * d.w / d.h;
+    el.style.width = w + "px";
+    el.style.backgroundImage = "url(img/sprites/" + d.file + ")";
+    el.style.setProperty("--x", (-w * d.n) + "px");
+    var once = el.dataset.once;
+    el.style.animation = reduce ? "none" : "spr " + (d.n / d.fps) + "s steps(" + d.n + ") " + (once ? "1" : "infinite");
+  }
+  function play(el, anim, cb) { // run an animation once, then fall back
+    var back = el.dataset.a; el.dataset.a = anim; el.dataset.once = "1"; el.style.animation = "none"; void el.offsetWidth; paint(el);
+    var d = SP[el.dataset.s][anim];
+    setTimeout(function () { delete el.dataset.once; el.dataset.a = back; paint(el); cb && cb(); }, d.n / d.fps * 1000);
+  }
+  function setSprite(el, s, a) { el.dataset.s = s; el.dataset.a = a; paint(el); }
+
+  fetch("img/sprites/sprites.json").then(function (r) { return r.json(); }).then(function (j) {
+    SP = j; document.querySelectorAll(".spr").forEach(paint); buildParade(); buildRaces(); duel(); });
+
+  /* ---- slideshow ---- */
+  var slides = document.querySelectorAll("#slides img"), si = 0;
+  if (!reduce) setInterval(function () { slides[si].classList.remove("on"); si = (si + 1) % slides.length; slides[si].classList.add("on"); }, 4200);
+
+  /* ---- embers ---- */
+  var cv = document.getElementById("embers"), cx = cv.getContext("2d"), P = [];
+  function size() { cv.width = cv.offsetWidth * devicePixelRatio; cv.height = cv.offsetHeight * devicePixelRatio; }
+  size(); addEventListener("resize", size);
+  for (var i = 0; i < 70; i++) P.push({ x: Math.random(), y: Math.random(), r: .6 + Math.random() * 2.2, v: .0006 + Math.random() * .0016, s: Math.random() * 6, ice: Math.random() < .22 });
+  (function tick(t) {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    P.forEach(function (p) {
+      p.y -= p.v; if (p.y < -.02) { p.y = 1.02; p.x = Math.random(); }
+      var x = (p.x + Math.sin(t / 1400 + p.s) * .012) * cv.width, y = p.y * cv.height, a = .35 + .45 * Math.sin(t / 500 + p.s * 3) ** 2;
+      cx.beginPath(); cx.arc(x, y, p.r * devicePixelRatio, 0, 7);
+      cx.fillStyle = p.ice ? "rgba(140,220,255," + a + ")" : "rgba(255," + (120 + (p.s * 15 | 0)) + ",50," + a + ")";
+      cx.shadowColor = p.ice ? "#6fd3ff" : "#ff8a3d"; cx.shadowBlur = 10; cx.fill();
+    });
+    if (!reduce) requestAnimationFrame(tick);
+  })(0);
+
+  /* ---- enemy parade ---- */
+  function buildParade() {
+    var pr = document.getElementById("parade");
+    var list = [["fire_imp", 74], ["frost_wolf", 56], ["orc_warrior", 120], ["hellhound", 62], ["ice_golem", 110], ["cinder_cultist", 96], ["fire_salamander", 42], ["rebel_mage", 96], ["ash_ghoul", 74], ["brute_warlord", 130], ["elf_raider", 70], ["demon_prince", 140]];
+    var dur = 34; list.forEach(function (e) { e[1] = Math.round(e[1] * 1.45); });
+    list.forEach(function (e, k) {
+      var w = document.createElement("i"); w.dataset.s = e[0]; w.dataset.a = "walk_sw";
+      w.style.setProperty("--h", e[1] + "px"); w.style.height = e[1] + "px";
+      var wrap = document.createElement("div"); wrap.className = "w"; wrap.style.setProperty("--t", dur + "s"); wrap.style.setProperty("--dl", (-dur * k / list.length) + "s");
+      w.className = "spr"; wrap.appendChild(w); pr.appendChild(wrap); paint(w);
+    });
+  }
+
+  /* ---- temple ---- */
+  var shrine = document.getElementById("shrine"), ts = document.getElementById("tstate"), wake = document.getElementById("wake");
+  var burst = shrine.querySelector(".burst");
+  for (var b = 0; b < 18; b++) { var s = document.createElement("i"); s.style.setProperty("--r", (b * 20) + "deg"); s.style.animationDelay = (b % 3) * .05 + "s"; burst.appendChild(s); }
+  function tstate() {
+    var on = shrine.classList.contains("on");
+    ts.innerHTML = on
+      ? (tr() ? "Tapınak uyandı<small>Artık yeniden doğma noktan. Dokun: işçi ve asker sıraya koy.</small>" : "The temple is awake<small>It's your respawn point now. Tap it to queue workers and soldiers.</small>")
+      : (tr() ? "Tapınak uyuyor<small>Çevresinde 3 koruyucu var; hepsi ölmeden uyanmaz.</small>" : "The temple sleeps<small>Three guardians stand around it; it won't wake until they all fall.</small>");
+    wake.innerHTML = on ? (tr() ? "↺ Baştan" : "↺ Reset") : (tr() ? "✨ Koruyucuları yen" : "✨ Defeat the guardians");
+  }
+  wake.addEventListener("click", function () {
+    if (!shrine.classList.contains("on")) { shrine.classList.remove("flash"); void shrine.offsetWidth; shrine.classList.add("on", "flash"); }
+    else shrine.classList.remove("on", "flash");
+    tstate();
+  });
+  tstate(); document.addEventListener("langchange", tstate);
+
+  /* ---- element duel ---- */
+  var SPELLS = [
+    { id: "fire_bolt", tr: "Ateş Oku", en: "Fire Bolt", el: "fire", dmg: 18, mana: 8 },
+    { id: "fireball", tr: "Ateş Topu", en: "Fireball", el: "fire", dmg: 30, mana: 22 },
+    { id: "ice_shard", tr: "Buz Kıymığı", en: "Ice Shard", el: "ice", dmg: 14, mana: 8 },
+    { id: "frost_ring", tr: "Ayaz Halkası", en: "Frost Ring", el: "ice", dmg: 20, mana: 25 }];
+  var FOES = [
+    { id: "fire_imp", tr: "Ateş İblisi", en: "Fire Imp", el: "fire", hp: 45, h: 135 },
+    { id: "hellhound", tr: "Cehennem Tazısı", en: "Hellhound", el: "fire", hp: 55, h: 120 },
+    { id: "frost_wolf", tr: "Ayaz Kurdu", en: "Frost Wolf", el: "ice", hp: 40, h: 110 },
+    { id: "ice_golem", tr: "Buz Golemi", en: "Ice Golem", el: "ice", hp: 160, h: 195 }];
+  var cur = { s: SPELLS[0], f: FOES[3] };
+  function duel() {
+    var sp = document.getElementById("spells"), fo = document.getElementById("foes");
+    SPELLS.forEach(function (s, k) {
+      var b = document.createElement("button"); b.type = "button"; b.innerHTML = '<img src="img/art/tome_' + s.id + '.webp" alt="">' + '<span lang="tr">' + s.tr + '</span><span lang="en">' + s.en + "</span>";
+      b.onclick = function () { cur.s = s; sync(); }; b.dataset.k = k; sp.appendChild(b);
+    });
+    FOES.forEach(function (f, k) {
+      var b = document.createElement("button"); b.type = "button";
+      b.innerHTML = '<span class="dot" style="background:' + (f.el === "fire" ? "var(--ember)" : "var(--frost)") + '"></span><span lang="tr">' + f.tr + '</span><span lang="en">' + f.en + "</span>";
+      b.onclick = function () { cur.f = f; sync(); }; b.dataset.k = k; fo.appendChild(b);
+    });
+    document.getElementById("cast").onclick = cast;
+    sync();
+  }
+  function mult() { return cur.s.el === cur.f.el ? .75 : 1.5; }
+  function fmt(n) { var s = (Math.round(n * 100) / 100).toString(); return tr() ? s.replace(".", ",") : s; }
+  function sync() {
+    document.querySelectorAll("#spells button").forEach(function (b) { b.classList.toggle("sel", SPELLS[b.dataset.k] === cur.s); });
+    document.querySelectorAll("#foes button").forEach(function (b) { b.classList.toggle("sel", FOES[b.dataset.k] === cur.f); });
+    document.getElementById("spells").classList.toggle("ice", cur.s.el === "ice");
+    var foe = document.getElementById("foe"); foe.style.height = cur.f.h + "px"; setSprite(foe, cur.f.id, "idle_sw");
+    var m = mult(), d = cur.s.dmg * m;
+    document.getElementById("calc").innerHTML = '<span style="color:' + (m > 1 ? "var(--gold)" : "var(--muted)") + '">' + fmt(d) + "</span>" +
+      "<small>" + (tr() ? "taban hasar " : "base damage ") + cur.s.dmg + " × " + fmt(m) + " · " + cur.s.mana + " mana · " +
+      (tr() ? (m > 1 ? "karşıt element, güçlü" : "aynı element, zayıf") : (m > 1 ? "opposite element, strong" : "same element, weak")) + "</small>";
+    document.getElementById("cast").innerHTML = (cur.s.el === "fire" ? "🔥 " : "❄️ ") + (tr() ? "Büyü at" : "Cast");
+  }
+  document.addEventListener("langchange", function () { if (SP) sync(); });
+  function cast() {
+    var caster = document.getElementById("caster"), bolt = document.getElementById("bolt"), foe = document.getElementById("foe"), pop = document.getElementById("pop"), ring = document.getElementById("fring");
+    var arena = document.getElementById("arena"), W = arena.clientWidth;
+    play(caster, "cast_se");
+    var land = function () {
+      foe.classList.remove("hit"); void foe.offsetWidth; foe.classList.add("hit");
+      pop.textContent = "-" + fmt(cur.s.dmg * mult()); pop.style.color = mult() > 1 ? "var(--gold)" : "var(--ink-2)";
+      pop.animate([{ opacity: 0, transform: "translateY(10px) scale(.6)" }, { opacity: 1, transform: "translateY(-10px) scale(1.15)", offset: .3 }, { opacity: 0, transform: "translateY(-50px) scale(1)" }], { duration: 1100, easing: "ease-out" });
+    };
+    if (cur.s.id === "frost_ring") {
+      ring.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(" + (W / 40 * 1.6) + ",6)" }], { duration: 700, easing: "ease-out", delay: 250 });
+      setTimeout(land, 650); return;
+    }
+    bolt.className = "bolt " + cur.s.el;
+    var big = cur.s.id === "fireball" ? 1.8 : 1;
+    bolt.animate([{ opacity: 0, transform: "translate(0,0) scale(" + big * .4 + ")" }, { opacity: 1, offset: .15 }, { opacity: 1, transform: "translate(" + (W * .52) + "px, 30px) scale(" + big + ")" }],
+      { duration: 520, delay: 260, easing: "cubic-bezier(.4,0,.8,.6)" }).onfinish = function () {
+        bolt.animate([{ opacity: 1, transform: "translate(" + (W * .52) + "px, 30px) scale(" + big + ")" }, { opacity: 0, transform: "translate(" + (W * .52) + "px, 30px) scale(" + big * 3 + ")" }], { duration: 300 });
+        land();
+      };
+  }
+
+  /* ---- hero builder ---- */
+  var ATTR = [
+    ["str", "Güç", "Strength", "Puan başına +2 yakın dövüş hasarı", "+2 melee damage per point"],
+    ["agi", "Çeviklik", "Agility", "+%5 saldırı hızı, daha hızlı yürüyüş", "+5% attack speed, faster walking"],
+    ["int", "Zekâ", "Intelligence", "+12 mana, +%6 büyü gücü", "+12 mana, +6% spell power"],
+    ["con", "Dayanıklılık", "Constitution", "+15 can, daha hızlı iyileşme", "+15 health, faster regeneration"],
+    ["lea", "Liderlik", "Leadership", "Askerlere +%5 can ve hasar", "+5% soldier health and damage"]];
+  var pts = { str: 0, agi: 0, int: 0, con: 0, lea: 0 }, LEFT = 5, MAX = 5;
+  var at = document.getElementById("attrs");
+  ATTR.forEach(function (a) {
+    var row = document.createElement("div"); row.className = "attr";
+    row.innerHTML = '<b><span lang="tr">' + a[1] + '</span><span lang="en">' + a[2] + '</span><small><span lang="tr">' + a[3] + '</span><span lang="en">' + a[4] + '</span></small></b><div class="pips">' + "<i></i>".repeat(MAX) +
+      '</div><div class="pm"><button type="button" data-d="-1" aria-label="-">−</button><button type="button" data-d="1" aria-label="+">+</button></div>';
+    row.querySelectorAll("button").forEach(function (bt) {
+      bt.onclick = function () { var d = +bt.dataset.d; if (d > 0 && (LEFT === 0 || pts[a[0]] >= MAX)) return; if (d < 0 && pts[a[0]] === 0) return; pts[a[0]] += d; LEFT -= d; draw(); };
+    });
+    row.dataset.k = a[0]; at.appendChild(row);
+  });
+  function draw() {
+    at.querySelectorAll(".attr").forEach(function (r) {
+      var v = pts[r.dataset.k]; r.querySelectorAll(".pips i").forEach(function (p, i) { p.classList.toggle("on", i < v); });
+      r.querySelector('[data-d="1"]').disabled = LEFT === 0 || v >= MAX; r.querySelector('[data-d="-1"]').disabled = v === 0;
+    });
+    document.getElementById("left").textContent = LEFT;
+  }
+  draw();
+  document.querySelectorAll(".portrait .seg button").forEach(function (b) {
+    b.onclick = function () {
+      document.querySelectorAll(".portrait .seg button").forEach(function (x) { x.classList.toggle("sel", x === b); });
+      document.getElementById("pm").classList.toggle("off", b.dataset.g !== "m"); document.getElementById("pf").classList.toggle("off", b.dataset.g !== "f");
+    };
+  });
+  // skill-rank diamonds: max rank 5, spell rows show the rank that unlocks them
+  document.querySelectorAll(".tree .r").forEach(function (r) {
+    var need = +(r.dataset.need || 0); r.innerHTML = [1, 2, 3, 4, 5].map(function (n) { return "<i" + (need && n <= need ? ' class="f"' : "") + "></i>"; }).join("");
+    if (need) r.title = "Sv " + need;
+  });
+
+  /* ---- races ---- */
+  var RACES = {
+    human: { c: "#f2c35b", tr: "İnsan", en: "Human", d: ["Taş ve ahşap yapılar. Dengeli piyade ve okçu; ateşe dayanıklı.", "Stone and timber buildings. Balanced infantry and archers; resistant to fire."], ch: ["Bölüm I'de başlangıç rün taşın envanterde gelir.", "Chapter I: your first rune stone is already in your bag."],
+      u: [["swordsman", "Kılıççı", "Swordsman", 80, 9, 1], ["archer", "Okçu", "Archer", 50, 7, 2]] },
+    orc: { c: "#9be15d", tr: "Ork", en: "Orc", d: ["Deri, kemik ve kaba ahşaptan yapılar. Ucuz, hızlı birlikler; buza dayanıklı.", "Buildings of hide, bone and rough timber. Cheap, fast troops; resistant to ice."], ch: ["Bölüm II'de orduyu orklar kurar.", "In Chapter II your army is made of orcs."],
+      u: [["orc_spearman", "Ork Mızrakçı", "Orc Spearman", 65, 9, 1], ["orc_fire_mage", "Ork Ateş Büyücüsü", "Orc Fire Mage", 40, 9, 2]] },
+    elf: { c: "#7fe0c8", tr: "Elf", en: "Elf", d: ["Ağaçlarla bütünleşik, zarif yapılar. Uzun menzilli okçular ve buz büyücüleri; ateşe dayanıklı.", "Graceful buildings woven into the trees. Long-range archers and ice mages; resistant to fire."], ch: ["Sonraki bölümler için hazır; elf rün taşı Bölüm II'nin sonunda verilir.", "Ready for later chapters; the elf rune stone is handed over at the end of Chapter II."],
+      u: [["elf_archer", "Elf Okçu", "Elf Archer", 45, 8, 1], ["elf_ice_mage", "Buz Büyücüsü", "Ice Mage", 40, 10, 2]] },
+    dwarf: { c: "#ffb36b", tr: "Cüce", en: "Dwarf", d: ["Kayaya ve dağa oyulmuş sağlam yapılar. Ağır zırhlı muhafızlar ve baltacılar; buza dayanıklı.", "Sturdy buildings carved into rock and mountain. Heavily armoured guards and axemen; resistant to ice."], ch: ["Sonraki bölümler için hazır.", "Ready for later chapters."],
+      u: [["dwarf_guard", "Cüce Muhafız", "Dwarf Guard", 150, 8, 1], ["dwarf_axeman", "Cüce Baltacı", "Dwarf Axeman", 100, 16, 2]] } };
+  function buildRaces() {
+    var host = document.getElementById("raceViews");
+    Object.keys(RACES).forEach(function (k, idx) {
+      var r = RACES[k], v = document.createElement("div"); v.className = "race" + (idx ? "" : " on"); v.dataset.r = k; v.style.setProperty("--rc", r.c);
+      var h = '<div class="rinfo"><img src="img/art/rune_' + k + '.webp" alt="" style="width:64px;height:64px;object-fit:contain;margin-bottom:10px"><h3><span lang="tr">' + r.tr + '</span><span lang="en">' + r.en + '</span></h3><p><span lang="tr">' + r.d[0] + '</span><span lang="en">' + r.d[1] + '</span></p><span class="tag"><span lang="tr">' + r.ch[0] + '</span><span lang="en">' + r.ch[1] + "</span></span></div>";
+      r.u.forEach(function (u) {
+        h += '<div class="unit"><span class="rlv">' + (tr() ? "Rün Sv" : "Rune Lv") + " " + u[5] + '</span><div class="pad"><i class="spr" data-s="' + u[0] + '" data-a="attack_se" style="--h:' + (u[0].indexOf("dwarf") === 0 ? 150 : 175) + 'px"></i></div><h4><span lang="tr">' + u[1] + '</span><span lang="en">' + u[2] + "</span></h4>" +
+          '<div class="bar"><span lang="tr">Can</span><span lang="en">Health</span><i style="--v:' + (u[3] / 1.5) + '"></i><b>' + u[3] + '</b></div><div class="bar"><span lang="tr">Hasar</span><span lang="en">Damage</span><i style="--v:' + (u[4] * 6) + '"></i><b>' + u[4] + "</b></div></div>";
+      });
+      v.innerHTML = h; host.appendChild(v); v.querySelectorAll(".spr").forEach(paint);
+    });
+    document.querySelectorAll("#races button").forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll("#races button").forEach(function (x) { x.classList.toggle("sel", x === b); });
+        document.querySelectorAll(".race").forEach(function (x) { x.classList.toggle("on", x.dataset.r === b.dataset.r); });
+        document.querySelectorAll(".race.on .spr").forEach(paint);
+      };
+    });
+    document.addEventListener("langchange", function () { document.querySelectorAll(".rlv").forEach(function (e) { e.textContent = e.textContent.replace(/^(Rün Sv|Rune Lv)/, tr() ? "Rün Sv" : "Rune Lv"); }); });
+  }
+})();
+</script>
+</body>
+</html>
