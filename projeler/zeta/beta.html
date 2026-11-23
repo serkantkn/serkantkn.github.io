@@ -42,6 +42,9 @@
   .form-msg.ok { border-color: color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--ink); }
   .form-msg.err { border-color: #e5484d; color: var(--ink); }
   .pending { color: var(--muted); font-style: italic; }
+  .soon { margin: 28px 0 0; padding: 18px 20px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--ink); }
+  .soon[hidden] { display: none; }
+  .soon a { color: var(--c); }
   .doc-body [hidden] { display: none !important; }
   @media (max-width: 720px) { .facts { grid-template-columns: 1fr; } .steps li { padding: 68px 18px 18px; } .steps li::before { left: 18px; top: 18px; } }
 </style>
@@ -53,6 +56,8 @@
     <a class="back reveal" href="index.html">← Zeta</a>
     <div class="app-id reveal"><img src="../../assets/icons/zeta.png" alt=""><span class="chip hot pulse"><span lang="tr">Kapalı beta</span><span lang="en">Closed beta</span> · Google Play</span></div>
     <h1 class="h-l split"><span lang="tr">Zeta'yı Google Play'den dene</span><span lang="en">Try Zeta from Google Play</span></h1>
+
+    <p class="soon reveal" data-soon hidden><span lang="tr"><strong>Kayıtlar çok yakında başlıyor.</strong> Google Play'deki kapalı test hazırlanıyor; grup ve başvuru formu açılınca bu sayfadan katılabileceksin. Haberdar olmak için sayfayı yer imlerine ekle ya da <a href="https://github.com/serkantkn/Zeta">GitHub'da Zeta'yı izle</a>.</span><span lang="en"><strong>Sign-ups open very soon.</strong> The closed test on Google Play is being set up; once the group and the sign-up form open, you can join from this page. Bookmark it, or <a href="https://github.com/serkantkn/Zeta">watch Zeta on GitHub</a> to hear first.</span></p>
 
     <!-- ── Türkçe ───────────────────────────────────────────────────────── -->
     <article class="doc-body reveal" lang="tr">
@@ -106,7 +111,7 @@ Sonra yukarıdaki 2. ve 3. adımlar.</p>
   <button class="btn" type="submit">Başvur</button>
   <p class="form-msg" role="status" hidden></p>
 </form>
-<p class="pending" data-pending="form" hidden>Form birkaç gün içinde açılacak; o zamana kadar gruba katılarak başvurabilirsin.</p>
+<p class="pending" data-pending="form" hidden>Form da çok yakında açılıyor.</p>
 
 <h2>Bilmen gerekenler</h2>
 <ul>
@@ -178,7 +183,7 @@ the testers' list by hand and send you the opt-in link (usually within a day or 
   <button class="btn" type="submit">Apply</button>
   <p class="form-msg" role="status" hidden></p>
 </form>
-<p class="pending" data-pending="form" hidden>The form opens in a few days; until then you can apply by joining the group.</p>
+<p class="pending" data-pending="form" hidden>The form opens very soon too.</p>
 
 <h2>Good to know</h2>
 <ul>
@@ -212,6 +217,7 @@ var BETA = {
   form: { action: "", fields: { name: "", email: "", devices: "" } }
 };
 (function () {
+  var soon = document.querySelector("[data-soon]"); if (soon && !BETA.group) soon.hidden = false;
   var groupLinks = document.querySelectorAll('[data-link="group"]');
   groupLinks.forEach(function (a) {
     if (BETA.group) { a.href = BETA.group; a.target = "_blank"; a.rel = "noopener"; }
