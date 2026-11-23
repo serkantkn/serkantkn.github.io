@@ -213,8 +213,11 @@ For the app itself, see the <a href="privacy.html">privacy policy</a>.</p>
  *  - form.action: the Google Form's ".../formResponse" address; form.fields: its "entry.N" names.
  */
 var BETA = {
-  group: "",
-  form: { action: "", fields: { name: "", email: "", devices: "" } }
+  group: "https://groups.google.com/g/zeta-ui-beta",
+  form: {
+    action: "https://docs.google.com/forms/d/e/1FAIpQLSdo-E95DYsOo_R47Su09Tp_k4fHEOHAyF_9cspRkUP3ML0D7Q/formResponse",
+    fields: { name: "entry.503270496", email: "entry.1825535198", devices: "entry.1696266687" }
+  }
 };
 (function () {
   var soon = document.querySelector("[data-soon]"); if (soon && !BETA.group) soon.hidden = false;
