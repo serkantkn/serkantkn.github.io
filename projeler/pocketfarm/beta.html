@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="pocketfarm">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PocketFarm · Kapalı beta — Serkan Tiken</title>
+<meta name="description" content="PocketFarm'ın Google Play kapalı betasına katıl: sakin, reklamsız bir çiftlik oyunu. Play'den kur, güncellemeler kendiliğinden gelsin.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="PocketFarm — Google Play kapalı betası">
+<meta property="og:image" content="../../assets/img/pocketfarm.jpg">
+<link rel="icon" href="../../assets/icons/pocketfarm.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=5">
+<style>
+  .steps { list-style: none; counter-reset: step; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .steps li { counter-increment: step; position: relative; padding: 20px 20px 20px 72px; border-radius: 18px;
+    background: rgba(255,255,255,.03); border: 1px solid var(--line); }
+  .steps li::before { content: counter(step); position: absolute; left: 20px; top: 18px; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 16px/1 var(--sans); color: #0b0c12; background: var(--c); }
+  .steps h3 { margin: 4px 0 6px; font-size: 19px; }
+  .steps p { margin: 0 0 12px; }
+  .steps p:last-child { margin-bottom: 0; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0 0; }
+  .facts div { padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.03); }
+  .facts b { display: block; font-size: 22px; color: var(--ink); letter-spacing: -.02em; }
+  .facts span { color: var(--muted); font-size: 14px; }
+  .form { display: grid; gap: 16px; margin-top: 20px; }
+  .form label { display: grid; gap: 6px; font-weight: 600; color: var(--ink); font-size: 15px; }
+  .form label small { font-weight: 400; color: var(--muted); }
+  .form input[type=text], .form input[type=email] { font: inherit; color: var(--ink); background: rgba(0,0,0,.35); border: 1px solid var(--line-2);
+    border-radius: 12px; padding: 12px 14px; outline: none; width: 100%; box-sizing: border-box; }
+  .form input:focus { border-color: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+  .form fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .form legend { font-weight: 600; color: var(--ink); font-size: 15px; margin-bottom: 6px; }
+  .form .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--ink-2); }
+  .form .check input { margin-top: 4px; accent-color: var(--c); width: 18px; height: 18px; flex: none; }
+  .form button.btn { justify-self: start; font: inherit; cursor: pointer; }
+  .form button.btn[disabled] { opacity: .6; cursor: progress; }
+  .form-msg { margin: 0; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line-2); }
+  .form-msg.ok { border-color: color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--ink); }
+  .form-msg.err { border-color: #e5484d; color: var(--ink); }
+  .pending { color: var(--muted); font-style: italic; }
+  .soon { margin: 28px 0 0; padding: 18px 20px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--ink); }
+  .soon[hidden] { display: none; }
+  .soon a { color: var(--c); }
+  .doc-body [hidden] { display: none !important; }
+  @media (max-width: 720px) { .facts { grid-template-columns: 1fr; } .steps li { padding: 68px 18px 18px; } .steps li::before { left: 18px; top: 18px; } }
+</style>
+</head>
+<body style="--c: var(--farm)">
+<main class="doc">
+  <div class="aurora" aria-hidden="true" style="--a1:var(--farm);--a2:var(--farm);--a3:#1a1d29;--a4:var(--farm)"><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <a class="back reveal" href="index.html">← PocketFarm</a>
+    <div class="app-id reveal"><img src="../../assets/icons/pocketfarm.png" alt=""><span class="chip hot pulse"><span lang="tr">Kapalı beta</span><span lang="en">Closed beta</span> · Google Play</span></div>
+    <h1 class="h-l split"><span lang="tr">PocketFarm'ı Google Play'den dene</span><span lang="en">Try PocketFarm from Google Play</span></h1>
+
+    <p class="soon reveal" data-soon hidden><span lang="tr"><strong>Kayıtlar çok yakında başlıyor.</strong> Google Play'deki kapalı test hazırlanıyor; grup ve başvuru formu açılınca bu sayfadan katılabileceksin. Haberdar olmak için sayfayı yer imlerine ekle ya da <a href="https://github.com/serkantkn/PocketFarm">GitHub'da PocketFarm'ı izle</a>.</span><span lang="en"><strong>Sign-ups open very soon.</strong> The closed test on Google Play is being set up; once the group and the sign-up form open, you can join from this page. Bookmark it, or <a href="https://github.com/serkantkn/PocketFarm">watch PocketFarm on GitHub</a> to hear first.</span></p>
+
+    <!-- ── Türkçe ───────────────────────────────────────────────────────── -->
+    <article class="doc-body reveal" lang="tr">
+<h1>PocketFarm kapalı beta</h1>
+<p class="lead">PocketFarm, Google Play'e çıkmadan önce kapalı bir testten geçiyor. Katılırsan oyunu Play'den
+kurarsın, yeni sürümler kendiliğinden gelir ve Play'deki ilk sürümü birlikte biçimlendiririz.</p>
+
+<div class="facts">
+  <div><b>Android 9+</b><span>telefon ve tablet</span></div>
+  <div><b>Ücretsiz</b><span>reklam ve uygulama içi satın alma yok</span></div>
+  <div><b>14 gün</b><span>Google'ın kuralı: en az 12 kişi, 14 gün boyunca kurulu tutmalı</span></div>
+</div>
+
+<h2>Nasıl katılırım</h2>
+<p>Bir Google hesabın olması yeter: Play Store'da kullandığın hesap. Üç adım, birkaç dakika.</p>
+<ol class="steps">
+  <li>
+    <h3>PocketFarm beta grubuna katıl</h3>
+    <p>Google Gruplar'da "Gruba katıl"a bas. Gruba katılan hesap test eden listesine kendiliğinden girer.
+    Grup bir posta listesi değil; sana e-posta gelmez, üyeleri yalnızca ben görürüm.</p>
+    <p><a class="btn" data-link="group" href="#"><span>Gruba katıl</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Test eden ol</h3>
+    <p>Play'in katılım sayfasında, <strong>gruba katıldığın hesapla</strong> "Test eden ol"a bas.
+    Gruba yeni katıldıysan sayfa birkaç dakika "uygulama bulunamadı" diyebilir; biraz sonra yeniden dene.</p>
+    <p><a class="btn" data-link="optin" href="https://play.google.com/apps/testing/com.serkantkn.pocketfarm"><span>Test eden ol</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Play Store'dan kur ve oyna</h3>
+    <p>PocketFarm Play Store'da "erken erişim" olarak görünür. Kur, kaldırma: test edenlerin 14 gün boyunca kurulu
+    tutması gerekiyor. Arada bir açıp çiftliğine bakman yeter; ne kadar oynadığın sana kalmış.</p>
+    <p><a class="btn ghost" data-link="store" href="https://play.google.com/store/apps/details?id=com.serkantkn.pocketfarm"><span>Play Store'da aç</span> <span class="arr">→</span></a></p>
+  </li>
+</ol>
+
+<h2>Gruba katılamıyorsan</h2>
+<p>İş ya da okul hesapları bazen Google Gruplar'a katılamaz. O zaman aşağıdaki formu doldur; adresini test
+edenler listesine elle eklerim ve sana katılım bağlantısını gönderirim (genelde bir iki gün içinde).
+Sonra yukarıdaki 2. ve 3. adımlar.</p>
+<form class="form" data-beta-form novalidate>
+  <label>Adın <small>isteğe bağlı</small><input type="text" name="name" autocomplete="name" maxlength="80"></label>
+  <label>Google Play'de kullandığın Google hesabının e-posta adresi<input type="email" name="email" autocomplete="email" required maxlength="120" placeholder="ornek@gmail.com"></label>
+  <fieldset>
+    <legend>Hangi cihazlarda deneyeceksin?</legend>
+    <label class="check"><input type="checkbox" name="devices" value="Telefon"> Telefon</label>
+    <label class="check"><input type="checkbox" name="devices" value="Tablet"> Tablet</label>
+  </fieldset>
+  <label class="check"><input type="checkbox" name="consent" required> Adresimin yalnızca beta için kullanılmasını ve beta bitince silinmesini kabul ediyorum (aşağıya bak).</label>
+  <button class="btn" type="submit">Başvur</button>
+  <p class="form-msg" role="status" hidden></p>
+</form>
+<p class="pending" data-pending="form" hidden>Form da çok yakında açılıyor.</p>
+
+<h2>Bilmen gerekenler</h2>
+<ul>
+  <li><strong>GitHub'dan kurduysan:</strong> Play sürümü aynı imzayı taşır; PocketFarm'ı kaldırmadan Play'den kurabilirsin,
+  çiftliğin olduğu gibi kalır. Bundan sonra güncellemeler Play'den gelir.</li>
+  <li><strong>Çiftliğin yanında:</strong> İstersen Ayarlar'dan Google ya da Play Oyunlar hesabınla giriş yap; çiftliğin
+  telefon, tablet, iPhone, iPad ve Mac arasında seninle gelir.</li>
+  <li><strong>Geri bildirim:</strong> Hata ve öneriler için <a href="https://github.com/serkantkn/PocketFarm/issues">GitHub'da bir issue aç</a>
+  ya da Play Store'daki oyun sayfasından özel geri bildirim gönder.</li>
+  <li><strong>Betadan çıkmak:</strong> Katılım sayfasındaki "Programdan ayrıl"a bas; gruptan da ayrılabilirsin. Kurulu oyun ve çiftliğin kalır.</li>
+  <li><strong>iPhone ve iPad:</strong> PocketFarm App Store'da zaten yayında; <a href="https://apps.apple.com/app/id6829665730">oradan ücretsiz indirebilirsin</a>.</li>
+</ul>
+
+<h2>Başvuru bilgilerin</h2>
+<p>Gruba katılırsan üyeliğini Google tutar; gruptan istediğin zaman ayrılabilirsin. Formu doldurursan adın, adresin ve
+seçtiğin cihazlar bir Google Formu'nda (Google'ın sunucularında) saklanır. Yalnızca seni Google Play'de test edenler
+listesine eklemek ve beta hakkında yazmak için kullanılır; kimseyle paylaşılmaz, beta bitince silinir. Silinmesini
+istersen <a href="mailto:pocketvillesupport@gmail.com">pocketvillesupport@gmail.com</a>'a yaz. Oyunun kendisi için
+<a href="privacy.html">gizlilik politikası</a>.</p>
+    </article>
+
+    <!-- ── English ──────────────────────────────────────────────────────── -->
+    <article class="doc-body reveal" lang="en">
+<h1>PocketFarm closed beta</h1>
+<p class="lead">Before PocketFarm goes out on Google Play it goes through a closed test. Join it and you install the game
+from Play, new versions arrive by themselves, and we shape Play's first release together.</p>
+
+<div class="facts">
+  <div><b>Android 9+</b><span>phone and tablet</span></div>
+  <div><b>Free</b><span>no ads and no in-app purchases</span></div>
+  <div><b>14 days</b><span>Google's rule: at least 12 people keep it installed for 14 days</span></div>
+</div>
+
+<h2>How to join</h2>
+<p>All you need is a Google account: the one you use on the Play Store. Three steps, a few minutes.</p>
+<ol class="steps">
+  <li>
+    <h3>Join the PocketFarm beta group</h3>
+    <p>Press "Join group" on Google Groups. The account that joins goes on the testers' list by itself.
+    The group is not a mailing list; you get no email, and only I see who is in it.</p>
+    <p><a class="btn" data-link="group" href="#"><span>Join the group</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Become a tester</h3>
+    <p>On Play's opt-in page, <strong>with the account you joined the group with</strong>, press "Become a tester".
+    If you have only just joined, the page may say "app not found" for a few minutes; try again a little later.</p>
+    <p><a class="btn" data-link="optin" href="https://play.google.com/apps/testing/com.serkantkn.pocketfarm"><span>Become a tester</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Install from the Play Store and play</h3>
+    <p>PocketFarm shows on the Play Store as "early access". Install it and keep it: testers need to keep it installed
+    for 14 days. Opening it now and then to check on your farm is enough; how much you play is up to you.</p>
+    <p><a class="btn ghost" data-link="store" href="https://play.google.com/store/apps/details?id=com.serkantkn.pocketfarm"><span>Open on the Play Store</span> <span class="arr">→</span></a></p>
+  </li>
+</ol>
+
+<h2>If you cannot join the group</h2>
+<p>Work and school accounts sometimes cannot join Google Groups. Then fill in the form below; I add your address to
+the testers' list by hand and send you the opt-in link (usually within a day or two). Then steps 2 and 3 above.</p>
+<form class="form" data-beta-form novalidate>
+  <label>Your name <small>optional</small><input type="text" name="name" autocomplete="name" maxlength="80"></label>
+  <label>The email address of the Google account you use on Google Play<input type="email" name="email" autocomplete="email" required maxlength="120" placeholder="you@gmail.com"></label>
+  <fieldset>
+    <legend>Which devices will you try it on?</legend>
+    <label class="check"><input type="checkbox" name="devices" value="Telefon"> Phone</label>
+    <label class="check"><input type="checkbox" name="devices" value="Tablet"> Tablet</label>
+  </fieldset>
+  <label class="check"><input type="checkbox" name="consent" required> I agree that my address is used only for the beta and deleted when it ends (see below).</label>
+  <button class="btn" type="submit">Apply</button>
+  <p class="form-msg" role="status" hidden></p>
+</form>
+<p class="pending" data-pending="form" hidden>The form opens very soon too.</p>
+
+<h2>Good to know</h2>
+<ul>
+  <li><strong>If you installed it from GitHub:</strong> the Play version carries the same signature; install it from Play
+  without uninstalling PocketFarm, and your farm stays as it is. From then on updates come from Play.</li>
+  <li><strong>Your farm comes along:</strong> sign in with Google or Play Games in Settings if you like, and your farm
+  follows you across phone, tablet, iPhone, iPad and Mac.</li>
+  <li><strong>Feedback:</strong> for bugs and ideas, <a href="https://github.com/serkantkn/PocketFarm/issues">open an issue on GitHub</a>
+  or send private feedback from the game's page on the Play Store.</li>
+  <li><strong>Leaving the beta:</strong> press "Leave the program" on the opt-in page; you can leave the group too. The game and your farm stay.</li>
+  <li><strong>iPhone and iPad:</strong> PocketFarm is already out on the App Store; <a href="https://apps.apple.com/app/id6829665730">get it free there</a>.</li>
+</ul>
+
+<h2>Your sign-up details</h2>
+<p>If you join the group, Google keeps your membership; you can leave the group whenever you like. If you fill in the
+form, your name, address and the devices you chose are kept in a Google Form (on Google's servers). They are used only
+to add you to the testers' list on Google Play and to write to you about the beta; they are shared with nobody and
+deleted when the beta ends. To have them deleted sooner, write to <a href="mailto:pocketvillesupport@gmail.com">pocketvillesupport@gmail.com</a>.
+For the game itself, see the <a href="privacy.html">privacy policy</a>.</p>
+    </article>
+  </div>
+</main>
+<script>
+/*
+ * The closed beta's two ways in. Fill these in once the group and the form exist (Play Console › Test › Kapalı test › Test edenler);
+ * until then the group button and the form stay hidden behind a short note.
+ *  - group: the Google Group's page, e.g. https://groups.google.com/g/pocketfarm-beta
+ *  - form.action: the Google Form's ".../formResponse" address; form.fields: its "entry.N" names.
+ */
+var BETA = {
+  group: "",
+  form: { action: "", fields: { name: "", email: "", devices: "" } }
+};
+(function () {
+  var soon = document.querySelector("[data-soon]"); if (soon && !BETA.group) soon.hidden = false;
+  var groupLinks = document.querySelectorAll('[data-link="group"]');
+  groupLinks.forEach(function (a) {
+    if (BETA.group) { a.href = BETA.group; a.target = "_blank"; a.rel = "noopener"; }
+    else { a.classList.add("off"); a.removeAttribute("href"); a.setAttribute("aria-disabled", "true");
+      var arr = a.querySelector(".arr"); if (arr) arr.remove(); a.firstElementChild.textContent = a.closest('[lang="en"]') ? "Opens soon" : "Yakında açılıyor"; }
+  });
+  document.querySelectorAll('[data-link="optin"], [data-link="store"]').forEach(function (a) { a.target = "_blank"; a.rel = "noopener"; });
+
+  var ready = BETA.form.action && BETA.form.fields.email;
+  document.querySelectorAll("[data-beta-form]").forEach(function (form) {
+    var en = !!form.closest('[lang="en"]');
+    var pending = form.parentNode.querySelector('[data-pending="form"]');
+    if (!ready) { form.hidden = true; if (pending) pending.hidden = false; return; }
+    var msg = form.querySelector(".form-msg");
+    var button = form.querySelector("button");
+    function say(text, ok) { msg.textContent = text; msg.className = "form-msg " + (ok ? "ok" : "err"); msg.hidden = false; }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        say(en ? "Please write a valid email address." : "Lütfen geçerli bir e-posta adresi yaz.", false); form.email.focus(); return;
+      }
+      if (!form.consent.checked) {
+        say(en ? "Please tick the box about your address." : "Lütfen adresinle ilgili kutuyu işaretle.", false); return;
+      }
+      var data = new URLSearchParams();
+      if (BETA.form.fields.name) data.append(BETA.form.fields.name, form.name.value.trim());
+      data.append(BETA.form.fields.email, email);
+      if (BETA.form.fields.devices) form.querySelectorAll('input[name="devices"]:checked').forEach(function (c) {
+        data.append(BETA.form.fields.devices, c.value);
+      });
+      button.disabled = true;
+      // Google Forms answers without the headers a page may read, so a sent form cannot be told from a
+      // lost one; a network failure still throws, and that is what is reported.
+      fetch(BETA.form.action, { method: "POST", mode: "no-cors", body: data })
+        .then(function () {
+          form.reset();
+          say(en ? "Thank you! I will add your address and send you the opt-in link within a day or two."
+                 : "Teşekkürler! Adresini ekleyip bir iki gün içinde katılım bağlantısını göndereceğim.", true);
+        })
+        .catch(function () {
+          say(en ? "It could not be sent. Check your connection and try again, or write to pocketvillesupport@gmail.com."
+                 : "Gönderilemedi. Bağlantını kontrol edip yeniden dene ya da pocketvillesupport@gmail.com'a yaz.", false);
+        })
+        .then(function () { button.disabled = false; });
+    });
+  });
+})();
+</script>
+<script src="../../assets/site.js?v=5"></script>
+</body>
+</html>
