@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="tr" data-lang="tr" data-root="../../" data-page="zeta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zeta · Kapalı beta — Serkan Tiken</title>
+<meta name="description" content="Zeta'nın Google Play kapalı betasına katıl: telefon, tablet ve televizyon için canlı karolu arayüz paketi. Play'den kur, güncellemeler kendiliğinden gelsin.">
+<meta name="theme-color" content="#0b0c12">
+<meta property="og:title" content="Zeta — Google Play kapalı betası">
+<meta property="og:image" content="img/tablet-baslangic.jpg">
+<link rel="icon" href="../../assets/icons/zeta.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css?v=5">
+<style>
+  .steps { list-style: none; counter-reset: step; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .steps li { counter-increment: step; position: relative; padding: 20px 20px 20px 72px; border-radius: 18px;
+    background: rgba(255,255,255,.03); border: 1px solid var(--line); }
+  .steps li::before { content: counter(step); position: absolute; left: 20px; top: 18px; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 16px/1 var(--sans); color: #0b0c12; background: var(--c); }
+  .steps h3 { margin: 4px 0 6px; font-size: 19px; }
+  .steps p { margin: 0 0 12px; }
+  .steps p:last-child { margin-bottom: 0; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0 0; }
+  .facts div { padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.03); }
+  .facts b { display: block; font-size: 22px; color: var(--ink); letter-spacing: -.02em; }
+  .facts span { color: var(--muted); font-size: 14px; }
+  .form { display: grid; gap: 16px; margin-top: 20px; }
+  .form label { display: grid; gap: 6px; font-weight: 600; color: var(--ink); font-size: 15px; }
+  .form label small { font-weight: 400; color: var(--muted); }
+  .form input[type=text], .form input[type=email] { font: inherit; color: var(--ink); background: rgba(0,0,0,.35); border: 1px solid var(--line-2);
+    border-radius: 12px; padding: 12px 14px; outline: none; width: 100%; box-sizing: border-box; }
+  .form input:focus { border-color: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+  .form fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .form legend { font-weight: 600; color: var(--ink); font-size: 15px; margin-bottom: 6px; }
+  .form .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--ink-2); }
+  .form .check input { margin-top: 4px; accent-color: var(--c); width: 18px; height: 18px; flex: none; }
+  .form button.btn { justify-self: start; font: inherit; cursor: pointer; }
+  .form button.btn[disabled] { opacity: .6; cursor: progress; }
+  .form-msg { margin: 0; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line-2); }
+  .form-msg.ok { border-color: color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--ink); }
+  .form-msg.err { border-color: #e5484d; color: var(--ink); }
+  .pending { color: var(--muted); font-style: italic; }
+  .doc-body [hidden] { display: none !important; }
+  @media (max-width: 720px) { .facts { grid-template-columns: 1fr; } .steps li { padding: 68px 18px 18px; } .steps li::before { left: 18px; top: 18px; } }
+</style>
+</head>
+<body style="--c: var(--zeta)">
+<main class="doc">
+  <div class="aurora" aria-hidden="true" style="--a1:var(--zeta);--a2:var(--zeta);--a3:#1a1d29;--a4:var(--zeta)"><b></b><b></b><b></b></div>
+  <div class="wrap">
+    <a class="back reveal" href="index.html">← Zeta</a>
+    <div class="app-id reveal"><img src="../../assets/icons/zeta.png" alt=""><span class="chip hot pulse"><span lang="tr">Kapalı beta</span><span lang="en">Closed beta</span> · Google Play</span></div>
+    <h1 class="h-l split"><span lang="tr">Zeta'yı Google Play'den dene</span><span lang="en">Try Zeta from Google Play</span></h1>
+
+    <!-- ── Türkçe ───────────────────────────────────────────────────────── -->
+    <article class="doc-body reveal" lang="tr">
+<h1>Zeta kapalı beta</h1>
+<p class="lead">Zeta, Google Play'e çıkmadan önce kapalı bir testten geçiyor. Katılırsan Zeta'yı Play'den
+kurarsın, yeni sürümler kendiliğinden gelir ve Play'deki ilk sürümü birlikte biçimlendiririz.</p>
+
+<div class="facts">
+  <div><b>Android 9+</b><span>telefon, tablet, Android TV ve Google TV</span></div>
+  <div><b>Pro açık</b><span>beta boyunca bütün Pro özellikleri ücretsiz</span></div>
+  <div><b>14 gün</b><span>Google'ın kuralı: en az 12 kişi, 14 gün boyunca kurulu tutmalı</span></div>
+</div>
+
+<h2>Nasıl katılırım</h2>
+<p>Bir Google hesabın olması yeter: Play Store'da kullandığın hesap. Üç adım, birkaç dakika.</p>
+<ol class="steps">
+  <li>
+    <h3>Zeta beta grubuna katıl</h3>
+    <p>Google Gruplar'da "Gruba katıl"a bas. Gruba katılan hesap test eden listesine kendiliğinden girer.
+    Grup bir posta listesi değil; sana e-posta gelmez, üyeleri yalnızca ben görürüm.</p>
+    <p><a class="btn" data-link="group" href="#"><span>Gruba katıl</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Test eden ol</h3>
+    <p>Play'in katılım sayfasında, <strong>gruba katıldığın hesapla</strong> "Test eden ol"a bas.
+    Gruba yeni katıldıysan sayfa birkaç dakika "uygulama bulunamadı" diyebilir; biraz sonra yeniden dene.</p>
+    <p><a class="btn" data-link="optin" href="https://play.google.com/apps/testing/com.serkantkn.zeta"><span>Test eden ol</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Play Store'dan kur</h3>
+    <p>Zeta Play Store'da "erken erişim" olarak görünür. Kur, kaldırma: test edenlerin 14 gün boyunca kurulu
+    tutması gerekiyor. Ana ekran yapmak istersen telefonun ayarlarında varsayılan ana ekran uygulaması olarak Zeta'yı seç; istemezsen sıradan bir uygulama gibi de açılır.</p>
+    <p><a class="btn ghost" data-link="store" href="https://play.google.com/store/apps/details?id=com.serkantkn.zeta"><span>Play Store'da aç</span> <span class="arr">→</span></a></p>
+  </li>
+</ol>
+
+<h2>Gruba katılamıyorsan</h2>
+<p>İş ya da okul hesapları bazen Google Gruplar'a katılamaz. O zaman aşağıdaki formu doldur; adresini test
+edenler listesine elle eklerim ve sana katılım bağlantısını gönderirim (genelde bir iki gün içinde).
+Sonra yukarıdaki 2. ve 3. adımlar.</p>
+<form class="form" data-beta-form novalidate>
+  <label>Adın <small>isteğe bağlı</small><input type="text" name="name" autocomplete="name" maxlength="80"></label>
+  <label>Google Play'de kullandığın Google hesabının e-posta adresi<input type="email" name="email" autocomplete="email" required maxlength="120" placeholder="ornek@gmail.com"></label>
+  <fieldset>
+    <legend>Hangi cihazlarda deneyeceksin?</legend>
+    <label class="check"><input type="checkbox" name="devices" value="Telefon"> Telefon</label>
+    <label class="check"><input type="checkbox" name="devices" value="Tablet"> Tablet</label>
+    <label class="check"><input type="checkbox" name="devices" value="Android TV / Google TV"> Android TV / Google TV</label>
+  </fieldset>
+  <label class="check"><input type="checkbox" name="consent" required> Adresimin yalnızca beta için kullanılmasını ve beta bitince silinmesini kabul ediyorum (aşağıya bak).</label>
+  <button class="btn" type="submit">Başvur</button>
+  <p class="form-msg" role="status" hidden></p>
+</form>
+<p class="pending" data-pending="form" hidden>Form birkaç gün içinde açılacak; o zamana kadar gruba katılarak başvurabilirsin.</p>
+
+<h2>Bilmen gerekenler</h2>
+<ul>
+  <li><strong>GitHub'dan kurduysan:</strong> Play sürümü aynı imzayı taşır; Zeta'yı kaldırmadan Play'den kurabilirsin,
+  ayarların ve düzenin kalır. Bundan sonra güncellemeler Play'den gelir.</li>
+  <li><strong>Geri bildirim:</strong> Hata ve öneriler için <a href="https://github.com/serkantkn/Zeta/issues">GitHub'da bir issue aç</a>
+  ya da Play Store'daki uygulama sayfasından özel geri bildirim gönder.</li>
+  <li><strong>Betadan çıkmak:</strong> Katılım sayfasındaki "Programdan ayrıl"a bas; gruptan da ayrılabilirsin. Kurulu Zeta çalışmaya devam eder.</li>
+  <li><strong>Pro:</strong> Beta boyunca herkese açık. Play'de satışa çıkınca Pro tek seferlik bir satın alma olur;
+  ücretsiz sürüm verilerinden hiçbirini kilitlemez.</li>
+</ul>
+
+<h2>Başvuru bilgilerin</h2>
+<p>Gruba katılırsan üyeliğini Google tutar; gruptan istediğin zaman ayrılabilirsin. Formu doldurursan adın, adresin ve
+seçtiğin cihazlar bir Google Formu'nda (Google'ın sunucularında) saklanır. Yalnızca seni Google Play'de test edenler
+listesine eklemek ve beta hakkında yazmak için kullanılır; kimseyle paylaşılmaz, beta bitince silinir. Silinmesini
+istersen <a href="mailto:serkantkn5@gmail.com">serkantkn5@gmail.com</a>'a yaz. Uygulamanın kendisi için
+<a href="privacy.html">gizlilik politikası</a>.</p>
+    </article>
+
+    <!-- ── English ──────────────────────────────────────────────────────── -->
+    <article class="doc-body reveal" lang="en">
+<h1>Zeta closed beta</h1>
+<p class="lead">Before Zeta goes out on Google Play it goes through a closed test. Join it and you install Zeta from
+Play, new versions arrive by themselves, and we shape Play's first release together.</p>
+
+<div class="facts">
+  <div><b>Android 9+</b><span>phone, tablet, Android TV and Google TV</span></div>
+  <div><b>Pro unlocked</b><span>every Pro feature is free during the beta</span></div>
+  <div><b>14 days</b><span>Google's rule: at least 12 people keep it installed for 14 days</span></div>
+</div>
+
+<h2>How to join</h2>
+<p>All you need is a Google account: the one you use on the Play Store. Three steps, a few minutes.</p>
+<ol class="steps">
+  <li>
+    <h3>Join the Zeta beta group</h3>
+    <p>Press "Join group" on Google Groups. The account that joins goes on the testers' list by itself.
+    The group is not a mailing list; you get no email, and only I see who is in it.</p>
+    <p><a class="btn" data-link="group" href="#"><span>Join the group</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Become a tester</h3>
+    <p>On Play's opt-in page, <strong>with the account you joined the group with</strong>, press "Become a tester".
+    If you have only just joined, the page may say "app not found" for a few minutes; try again a little later.</p>
+    <p><a class="btn" data-link="optin" href="https://play.google.com/apps/testing/com.serkantkn.zeta"><span>Become a tester</span> <span class="arr">→</span></a></p>
+  </li>
+  <li>
+    <h3>Install from the Play Store</h3>
+    <p>Zeta shows on the Play Store as "early access". Install it and keep it: testers need to keep it installed for
+    14 days. To make it your home screen, choose Zeta as the default home app in your phone's settings; if you would rather not, it opens like any other app.</p>
+    <p><a class="btn ghost" data-link="store" href="https://play.google.com/store/apps/details?id=com.serkantkn.zeta"><span>Open on the Play Store</span> <span class="arr">→</span></a></p>
+  </li>
+</ol>
+
+<h2>If you cannot join the group</h2>
+<p>Work and school accounts sometimes cannot join Google Groups. Then fill in the form below; I add your address to
+the testers' list by hand and send you the opt-in link (usually within a day or two). Then steps 2 and 3 above.</p>
+<form class="form" data-beta-form novalidate>
+  <label>Your name <small>optional</small><input type="text" name="name" autocomplete="name" maxlength="80"></label>
+  <label>The email address of the Google account you use on Google Play<input type="email" name="email" autocomplete="email" required maxlength="120" placeholder="you@gmail.com"></label>
+  <fieldset>
+    <legend>Which devices will you try it on?</legend>
+    <label class="check"><input type="checkbox" name="devices" value="Telefon"> Phone</label>
+    <label class="check"><input type="checkbox" name="devices" value="Tablet"> Tablet</label>
+    <label class="check"><input type="checkbox" name="devices" value="Android TV / Google TV"> Android TV / Google TV</label>
+  </fieldset>
+  <label class="check"><input type="checkbox" name="consent" required> I agree that my address is used only for the beta and deleted when it ends (see below).</label>
+  <button class="btn" type="submit">Apply</button>
+  <p class="form-msg" role="status" hidden></p>
+</form>
+<p class="pending" data-pending="form" hidden>The form opens in a few days; until then you can apply by joining the group.</p>
+
+<h2>Good to know</h2>
+<ul>
+  <li><strong>If you installed it from GitHub:</strong> the Play version carries the same signature; install it from Play
+  without uninstalling Zeta, and your settings and layout stay. From then on updates come from Play.</li>
+  <li><strong>Feedback:</strong> for bugs and ideas, <a href="https://github.com/serkantkn/Zeta/issues">open an issue on GitHub</a>
+  or send private feedback from the app's page on the Play Store.</li>
+  <li><strong>Leaving the beta:</strong> press "Leave the program" on the opt-in page; you can leave the group too. The Zeta you have keeps working.</li>
+  <li><strong>Pro:</strong> unlocked for everyone during the beta. Once it is on sale on Play, Pro is a one-time purchase;
+  the free version never locks away any of your data.</li>
+</ul>
+
+<h2>Your sign-up details</h2>
+<p>If you join the group, Google keeps your membership; you can leave the group whenever you like. If you fill in the
+form, your name, address and the devices you chose are kept in a Google Form (on Google's servers). They are used only
+to add you to the testers' list on Google Play and to write to you about the beta; they are shared with nobody and
+deleted when the beta ends. To have them deleted sooner, write to <a href="mailto:serkantkn5@gmail.com">serkantkn5@gmail.com</a>.
+For the app itself, see the <a href="privacy.html">privacy policy</a>.</p>
+    </article>
+  </div>
+</main>
+<script>
+/*
+ * The closed beta's two ways in. Fill these in once the group and the form exist (PLAY.md, section 8);
+ * until then the group button and the form stay hidden behind a short note.
+ *  - group: the Google Group's page, e.g. https://groups.google.com/g/zeta-beta
+ *  - form.action: the Google Form's ".../formResponse" address; form.fields: its "entry.N" names.
+ */
+var BETA = {
+  group: "",
+  form: { action: "", fields: { name: "", email: "", devices: "" } }
+};
+(function () {
+  var groupLinks = document.querySelectorAll('[data-link="group"]');
+  groupLinks.forEach(function (a) {
+    if (BETA.group) { a.href = BETA.group; a.target = "_blank"; a.rel = "noopener"; }
+    else { a.classList.add("off"); a.removeAttribute("href"); a.setAttribute("aria-disabled", "true");
+      var arr = a.querySelector(".arr"); if (arr) arr.remove(); a.firstElementChild.textContent = a.closest('[lang="en"]') ? "Opens soon" : "Yakında açılıyor"; }
+  });
+  document.querySelectorAll('[data-link="optin"], [data-link="store"]').forEach(function (a) { a.target = "_blank"; a.rel = "noopener"; });
+
+  var ready = BETA.form.action && BETA.form.fields.email;
+  document.querySelectorAll("[data-beta-form]").forEach(function (form) {
+    var en = !!form.closest('[lang="en"]');
+    var pending = form.parentNode.querySelector('[data-pending="form"]');
+    if (!ready) { form.hidden = true; if (pending) pending.hidden = false; return; }
+    var msg = form.querySelector(".form-msg");
+    var button = form.querySelector("button");
+    function say(text, ok) { msg.textContent = text; msg.className = "form-msg " + (ok ? "ok" : "err"); msg.hidden = false; }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        say(en ? "Please write a valid email address." : "Lütfen geçerli bir e-posta adresi yaz.", false); form.email.focus(); return;
+      }
+      if (!form.consent.checked) {
+        say(en ? "Please tick the box about your address." : "Lütfen adresinle ilgili kutuyu işaretle.", false); return;
+      }
+      var data = new URLSearchParams();
+      if (BETA.form.fields.name) data.append(BETA.form.fields.name, form.name.value.trim());
+      data.append(BETA.form.fields.email, email);
+      if (BETA.form.fields.devices) form.querySelectorAll('input[name="devices"]:checked').forEach(function (c) {
+        data.append(BETA.form.fields.devices, c.value);
+      });
+      button.disabled = true;
+      // Google Forms answers without the headers a page may read, so a sent form cannot be told from a
+      // lost one; a network failure still throws, and that is what is reported.
+      fetch(BETA.form.action, { method: "POST", mode: "no-cors", body: data })
+        .then(function () {
+          form.reset();
+          say(en ? "Thank you! I will add your address and send you the opt-in link within a day or two."
+                 : "Teşekkürler! Adresini ekleyip bir iki gün içinde katılım bağlantısını göndereceğim.", true);
+        })
+        .catch(function () {
+          say(en ? "It could not be sent. Check your connection and try again, or write to serkantkn5@gmail.com."
+                 : "Gönderilemedi. Bağlantını kontrol edip yeniden dene ya da serkantkn5@gmail.com'a yaz.", false);
+        })
+        .then(function () { button.disabled = false; });
+    });
+  });
+})();
+</script>
+<script src="../../assets/site.js?v=5"></script>
+</body>
+</html>
