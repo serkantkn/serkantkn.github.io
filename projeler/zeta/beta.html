@@ -59,6 +59,8 @@
 
     <p class="soon reveal" data-soon hidden><span lang="tr"><strong>Kayıtlar çok yakında başlıyor.</strong> Google Play'deki kapalı test hazırlanıyor; grup ve başvuru formu açılınca bu sayfadan katılabileceksin. Haberdar olmak için sayfayı yer imlerine ekle ya da <a href="https://github.com/serkantkn/Zeta">GitHub'da Zeta'yı izle</a>.</span><span lang="en"><strong>Sign-ups open very soon.</strong> The closed test on Google Play is being set up; once the group and the sign-up form open, you can join from this page. Bookmark it, or <a href="https://github.com/serkantkn/Zeta">watch Zeta on GitHub</a> to hear first.</span></p>
 
+    <p class="soon reveal" data-review hidden><span lang="tr"><strong>Beta başladı, Google'ın ilk incelemesi sürüyor.</strong> Gruba şimdi katılabilirsin; 2. adımdaki "Test eden ol" bağlantısı Google incelemeyi bitirince (genelde birkaç gün) açılır. O zamana kadar "uygulama bulunamadı" demesi normal; grupta kalman yeter.</span><span lang="en"><strong>The beta has started, and Google's first review is under way.</strong> You can join the group now; the "Become a tester" link in step 2 opens once Google finishes the review (usually a few days). Until then it saying "app not found" is expected; just stay in the group.</span></p>
+
     <!-- ── Türkçe ───────────────────────────────────────────────────────── -->
     <article class="doc-body reveal" lang="tr">
 <h1>Zeta kapalı beta</h1>
@@ -213,6 +215,8 @@ For the app itself, see the <a href="privacy.html">privacy policy</a>.</p>
  *  - form.action: the Google Form's ".../formResponse" address; form.fields: its "entry.N" names.
  */
 var BETA = {
+  // true while Google's first review of the closed track is under way: the opt-in link does not work yet
+  reviewing: true,
   group: "https://groups.google.com/g/zeta-ui-beta",
   form: {
     action: "https://docs.google.com/forms/d/e/1FAIpQLSdo-E95DYsOo_R47Su09Tp_k4fHEOHAyF_9cspRkUP3ML0D7Q/formResponse",
@@ -221,6 +225,7 @@ var BETA = {
 };
 (function () {
   var soon = document.querySelector("[data-soon]"); if (soon && !BETA.group) soon.hidden = false;
+  var review = document.querySelector("[data-review]"); if (review && BETA.group && BETA.reviewing) review.hidden = false;
   var groupLinks = document.querySelectorAll('[data-link="group"]');
   groupLinks.forEach(function (a) {
     if (BETA.group) { a.href = BETA.group; a.target = "_blank"; a.rel = "noopener"; }
